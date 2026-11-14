@@ -54,10 +54,11 @@ jobs:
           npm run web
           npx cap add ios
           npx cap sync ios
+          (cd ios/App && pod install)
           cp assets/icons/icon-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
       - name: Build unsigned app
         run: |
-          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
           mkdir -p Payload
