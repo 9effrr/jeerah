@@ -1,0 +1,7 @@
+{
+  "appId": "com.zerodocs.jeerah",
+  "appName": "جيرة",
+  "webDir": "www",
+  "android": { "backgroundColor": "#232F45" },
+  "ios": { "backgroundColor": "#232F45", "contentInset": "never" }
+}
