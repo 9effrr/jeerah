@@ -145,10 +145,17 @@ function home(){
       '<img src="assets/scene/cover.webp" alt="" width="1400" height="1400"></div>'+
     '<div class="hero"><div class="logo" role="img" aria-label="جيرة Jeerah"></div>'+
       '<p class="tag">'+t('tag')+'</p><p class="meta">'+t('meta')+'</p></div>'+
-    '<div class="foot"><button class="btn" data-act="to-setup">'+t('p_onePhone')+'</button>'+
-      '<button class="btn quiet" data-act="go" data-href="tv.html">'+t('p_bigScreen')+'</button>'+
-      '<div class="links"><button class="btn ghost" data-act="go" data-href="join.html">'+t('p_joinRoom')+'</button><button class="btn ghost" data-act="howto">'+t('howto')+'</button><button class="btn ghost" data-act="cast">'+t('cast')+'</button></div></div>',
+    '<div class="foot"><button class="btn" data-act="enter">'+t('enterB')+'</button>'+
+      '<div class="links"><button class="btn ghost" data-act="howto">'+t('howto')+'</button><button class="btn ghost" data-act="cast">'+t('cast')+'</button></div></div>',
     'home');
+}
+function enterV(){
+  const ic={one:'<svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/></svg>',
+    each:'<svg viewBox="0 0 24 24"><rect x="3" y="6" width="7.5" height="13" rx="2"/><rect x="13.5" y="6" width="7.5" height="13" rx="2"/><path d="M6 16h1.5M16.5 16H18"/></svg>',
+    tv:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>'};
+  const m=(act,href,k,a,b)=>'<button class="mode" data-act="'+act+'"'+(href?' data-href="'+href+'"':'')+'><span class="mic">'+ic[k]+'</span><span class="txt"><b>'+t(a)+'</b><span>'+t(b)+'</span></span><span class="chev">'+I.chev+'</span></button>';
+  show('night',backBar()+'<h1 class="mt16">'+t('p_modeTitle')+'</h1>'+
+    '<div class="modes cardsm">'+m('to-setup','','one','m_one','m_oneD')+m('go','join.html','each','m_each','m_eachD')+m('go','tv.html','tv','m_tv','m_tvD')+'</div>');
 }
 function backBar(title){
   return '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span>'+
@@ -526,6 +533,7 @@ function end(){
 /* ---------- actions ---------- */
 const A={
   'home':()=>{closeSheet();view(home)},
+  'enter':()=>view(enterV),
   'go':el=>{location.href=el.dataset.href},
   'howto':()=>view(howto),
   'cast':()=>view(cast),

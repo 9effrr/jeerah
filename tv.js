@@ -3,6 +3,8 @@
 'use strict';
 const {T,ROLES,SPECIALS,ROLE_ORDER,MIN,MAX}=window.JDATA;
 const PUBLIC='https://9effrr.github.io/jeerah/';
+const EMB=/[?&]embed=1/.test(location.search),QCODE=(location.search.match(/[?&]code=([A-Z0-9]{5})/)||[])[1],SKEY=EMB?'jeerah:tvp':'jeerah:tv';
+function tell(m){if(EMB&&parent!==window){try{parent.postMessage(Object.assign({jeerah:1},m),location.origin)}catch(e){}}}
 const store={get(k,d){try{const v=localStorage.getItem('jeerah:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('jeerah:'+k,JSON.stringify(v))}catch(e){}}};
 
 const UI={lang:store.get('lang','ar'),sound:store.get('sound',true),cfg:Object.assign({sabs:0,timer:180,roles:{smart:true,fixer:true,legal:true,solid:true,complainer:true}},store.get('cfg',{}))};
@@ -29,7 +31,7 @@ function music(on){try{if(on&&UI.sound){if(!bgm){bgm=new Audio('assets/audio/bgm
 let G=null,net=null;
 const conns={}; // cid -> pid
 function fresh(code){return{code,phase:'lobby',round:0,players:[],hostPid:null,legal:{kill:false,save:false},lastProtect:null,immune:null,night:null,votes:{},sus:{},report:[],tally:[],verdict:null,second:null,winner:null,soloPid:null,left:0,paused:false}}
-function save(){try{const c=JSON.parse(JSON.stringify(G));c.players.forEach(p=>{p.cid=null;p.online=false});sessionStorage.setItem('jeerah:tv',JSON.stringify({at:Date.now(),G:c}))}catch(e){}}
+function save(){try{const c=JSON.parse(JSON.stringify(G));c.players.forEach(p=>{p.cid=null;p.online=false});sessionStorage.setItem(SKEY,JSON.stringify({at:Date.now(),G:c}))}catch(e){}}
 const P=pid=>G.players.find(p=>p.pid===pid);
 const alive=()=>G.players.filter(p=>p.alive);
 
@@ -133,7 +135,8 @@ function viewFor(p){
     me:{pid:p.pid,name:p.name,g:p.g,apt:p.apt,alive:p.alive!==false,role:G.phase==='lobby'?null:p.role},
     host:G.hostPid===p.pid,ctl:G.hostPid===p.pid&&primaryReady()?primaryLabel():null};
   const ph=G.phase;
-  if(ph==='lobby'){v.players=G.players.map(x=>({name:x.name,g:x.g}));v.min=MIN;return v}
+  if(EMB){v.solo=true;v.pub=pubFor()}
+  if(ph==='lobby'){v.players=G.players.map(x=>({name:x.name,g:x.g,host:x.pid===G.hostPid,on:x.online!==false,me:x.pid===p.pid}));v.min=MIN;v.max=MAX;if(EMB)v.url=joinURL();return v}
   if(ph==='roles'){v.mates=p.role==='saboteur'?G.players.filter(x=>x.role==='saboteur'&&x.pid!==p.pid).map(x=>x.name):[];v.ready=!!p.ready;return v}
   if(ph==='night'){
     const n=G.night;
@@ -163,6 +166,25 @@ function viewFor(p){
     v.winner=G.winner;return v;
   }
   v.view=p.alive?'screen':'out';return v;
+}
+function pubFor(){
+  const ph=G.phase,o={},b=x=>({name:x.name,g:x.g});
+  if(ph==='roles')o.players=G.players.map(x=>Object.assign(b(x),{done:!!x.ready}));
+  else if(ph==='night')o.players=alive().map(x=>Object.assign(b(x),{done:!!G.night.acted[x.pid]}));
+  else if(ph==='vote')o.players=alive().map(x=>Object.assign(b(x),{done:x.pid in G.votes}));
+  else if(ph==='morning')o.report=G.report.map(r=>{const x=r.pid?P(r.pid):null;return{k:r.k,name:x?x.name:null,g:x?x.g:null,role:x&&!r.plain?x.role:null}});
+  else if(ph==='council'){o.left=G.left;o.timer=UI.cfg.timer;o.paused=G.paused;o.players=alive().map(x=>Object.assign(b(x),{shield:x.pid===G.immune}))}
+  else if(ph==='tally'){const top=G.tally.length?G.tally[0].n:0;o.tied=G.tally.filter(r=>r.n===top).length>1;o.rows=G.tally.map(r=>Object.assign(b(P(r.pid)),{n:r.n,top:r.n===top}))}
+  else if(ph==='verdict'||ph==='solid'){
+    if(G.verdict==null)o.tie=true;
+    else{const s=G.second?P(G.second.pid):P(G.verdict);o.show=Object.assign(b(s),{role:s.role});if(G.second)o.by=b(P(G.second.by));o.waiting=ph==='solid'}
+  }
+  else if(ph==='end'){
+    o.winner=G.winner;if(G.soloPid)o.soloP=b(P(G.soloPid));
+    o.cast=G.players.map(x=>Object.assign(b(x),{role:x.role,alive:x.alive}));
+    const ids=Object.keys(G.sus);if(ids.length)o.sus=P(ids.sort((a,c)=>G.sus[c]-G.sus[a])[0]).name;
+  }
+  return o;
 }
 function push(){if(!net)return;G.players.forEach(p=>{if(p.cid)net.send(p.cid,viewFor(p))})}
 function update(){render();push();save()}
@@ -216,7 +238,7 @@ function onMsg(cid,m){
     tp.alive=false;G.second={by:p.pid,pid:tp.pid};G.phase='verdict';snd('negative_sound',.45);update();return;
   }
 }
-function onClose(cid){const pid=conns[cid];delete conns[cid];const p=pid&&P(pid);if(p&&p.cid===cid){p.cid=null;p.online=false;render()}}
+function onClose(cid){const pid=conns[cid];delete conns[cid];const p=pid&&P(pid);if(p&&p.cid===cid){p.cid=null;p.online=false;render();push()}}
 
 /* ---------- TV rendering ---------- */
 const root=document.getElementById('tv');
@@ -266,6 +288,7 @@ function primaryBtn(){
   return '<button class="pbtn" data-act="primary">'+primaryLabel()+'<kbd>Space</kbd></button>';
 }
 function render(){
+  if(EMB)return;
   if(!G){root.innerHTML='<div class="center"><div class="spinner"></div><p>'+t('p_connecting')+'</p><button class="ghost" data-act="exit-yes">'+t('p_exit')+'</button></div>';return}
   const ph=G.phase;root.dataset.phase=ph;
   let h='';
@@ -402,25 +425,27 @@ const A={
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(f)f(el)});
 document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!document.querySelector('.sheet-wrap')){e.preventDefault();if(G&&primaryReady())primary()}});
 
-function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem('jeerah:tv')}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html')}
+addEventListener('message',e=>{if(EMB&&e.origin===location.origin&&e.data&&e.data.jeerah===2&&e.data.k==='end'){try{sessionStorage.removeItem(SKEY)}catch(x){}try{net&&net.close()}catch(x){}}});
+function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem(SKEY)}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html')}
 function setLang(){document.documentElement.lang=UI.lang;document.documentElement.dir=UI.lang==='ar'?'rtl':'ltr'}
 
 /* ---------- boot ---------- */
 function boot(){
   setLang();render();
-  let saved=null;try{saved=JSON.parse(sessionStorage.getItem('jeerah:tv')||'null')}catch(e){}
-  const code=saved&&Date.now()-saved.at<4*3600e3?saved.G.code:newCode();
+  let saved=null;try{saved=JSON.parse(sessionStorage.getItem(SKEY)||'null')}catch(e){}
+  if(EMB&&saved&&saved.G.code!==QCODE)saved=null;
+  const code=saved&&Date.now()-saved.at<4*3600e3?saved.G.code:(QCODE||newCode());
   G=saved&&saved.G.code===code?saved.G:fresh(code);
   net=Net.host(code,{
-    open(c){G.code=c;update()},
+    open(c){G.code=c;update();tell({k:'open',code:c})},
     newCode(){const c=newCode();G=fresh(c);return c},
     connect(){},
     msg:onMsg,
     close:onClose,
-    error(e){if(e&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='browser-incompatible')){root.innerHTML='<div class="center"><p>'+t('p_netErr')+'</p><button class="pbtn" onclick="location.reload()">'+t('p_retry')+'</button><button class="ghost" data-act="exit-yes">'+t('p_exit')+'</button></div>'}}
+    error(e){tell({k:'error'});if(EMB)return;if(e&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='browser-incompatible')){root.innerHTML='<div class="center"><p>'+t('p_netErr')+'</p><button class="pbtn" onclick="location.reload()">'+t('p_retry')+'</button><button class="ghost" data-act="exit-yes">'+t('p_exit')+'</button></div>'}}
   });
 }
-Back.init({root:()=>false,back(){const w=document.querySelector('.sheet-wrap');if(w){w.remove();return}A.exit()}});
+if(!EMB)Back.init({root:()=>false,back(){const w=document.querySelector('.sheet-wrap');if(w){w.remove();return}A.exit()}});
 window.__tv={get G(){return G},primary,A};
 boot();
 })();

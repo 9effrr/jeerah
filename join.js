@@ -7,10 +7,15 @@ const store={get(k,d){try{const v=localStorage.getItem(NS+k);return v==null?d:JS
 const app=document.getElementById('app'),screen=document.getElementById('screen');
 
 const S={lang:store.get('lang','ar'),pid:store.get('pid',null),name:store.get('pname',''),g:store.get('pg','m'),
-  code:'',net:null,state:null,status:'form',err:'',sel:null,mode:null,retry:null,dropped:false,lastKey:''};
+  code:'',net:null,state:null,status:'form',err:'',sel:null,mode:null,retry:null,dropped:false,lastKey:'',hosting:false,frame:null,seen:{},at:0};
 if(!S.pid){S.pid='p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);store.set('pid',S.pid)}
 const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
-S.code=hashCode()||store.get('pcode','');
+const LINK=hashCode();
+S.code=LINK||store.get('pcode','');
+const teamCol=r=>{const tm=ROLES[r].team;return tm==='sab'?'var(--bad)':tm==='solo'?'var(--solo)':'var(--good)'};
+function fmt(s){const m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x}
+function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
+function qrSVG(text){const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+='M'+c+' '+r+'h1v1h-1z';return '<svg viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" fill="#F1ECE1"/><path d="'+d+'" fill="#1F2A3F"/></svg>'}
 
 function t(k,v){let s=(T[S.lang][k]!=null?T[S.lang][k]:T.ar[k]);if(s==null)s=k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
 function tg(k,g,v){return t(g==='f'&&T[S.lang][k+'_f']!=null?k+'_f':k,v)}
@@ -57,29 +62,51 @@ function ctl(st){return st.ctl?'<div class="hostctl"><span class="small">'+t('p_
 
 /* ---------- screens ---------- */
 function formV(){
+  const busy=S.status==='joining'||S.status==='opening';
   show('night',
-    '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span><span></span><span class="side end"></span></header>'+
+    '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span><span></span><span class="side end"><button class="text-btn" data-act="lang">'+(S.lang==='ar'?'EN':'ع')+'</button></span></header>'+
     '<div class="joinhero"><div class="logo" role="img" aria-label="جيرة"></div></div>'+
-    '<h1 class="center-t">'+t('p_joinTitle')+'</h1>'+
+    '<h1 class="center-t">'+t(LINK?'p_joinTitle':'h_title')+'</h1>'+
     '<form id="jf" class="stack g12 mt24">'+
-      '<label class="field"><input id="code" dir="ltr" autocomplete="off" autocapitalize="characters" maxlength="5" placeholder="'+t('p_codePh')+'" value="'+esc(S.code)+'"></label>'+
       '<label class="field"><input id="nm" maxlength="14" autocomplete="off" placeholder="'+t('p_name')+'" value="'+esc(S.name)+'">'+
       '<span class="gpick"><button type="button" data-act="g" data-g="m" class="'+(S.g==='m'?'on':'')+'" aria-label="'+t('male')+'">'+I.m+'</button><button type="button" data-act="g" data-g="f" class="'+(S.g==='f'?'on':'')+'" aria-label="'+t('female')+'">'+I.f+'</button></span></label>'+
+      (LINK?'':'<button type="button" class="btn" data-act="host" '+(busy?'disabled':'')+'>'+(S.status==='opening'?t('h_opening'):t('h_new'))+'</button><p class="small center-t mt8">'+t('h_orJoin')+'</p>')+
+      '<label class="field"><input id="code" dir="ltr" autocomplete="off" autocapitalize="characters" maxlength="5" placeholder="'+t('p_codePh')+'" value="'+esc(S.hosting?'':S.code)+'"></label>'+
       (S.err?'<p class="err">'+t(S.err)+'</p>':'')+
-      '<div class="foot"><button class="btn" id="go">'+(S.status==='joining'?t('p_joining'):t('p_enter'))+'</button>'+
-      '<button type="button" class="btn ghost" data-act="lang">'+(S.lang==='ar'?'English':'العربية')+'</button></div>'+
+      '<button class="btn '+(LINK?'':'quiet')+'" id="go" '+(busy?'disabled':'')+'>'+(S.status==='joining'&&!S.hosting?t('p_joining'):t('h_joinB'))+'</button>'+
     '</form>','form');
   const f=document.getElementById('jf');
   f.addEventListener('submit',e=>{e.preventDefault();
     const code=document.getElementById('code').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
-    const nm=document.getElementById('nm').value.trim().replace(/\s+/g,' ');
-    if(code.length<5||!nm){S.err=!nm?'p_name':'p_noRoom';formV();return}
-    S.code=code;S.name=nm;store.set('pname',nm);store.set('pg',S.g);store.set('pcode',code);
-    if(location.hash.slice(1)!==code)history.replaceState(null,'',location.pathname+location.search+'#'+code);
+    if(!readName())return;
+    if(code.length<5){S.err='p_noRoom';formV();return}
+    S.code=code;store.set('pcode',code);
+    if(location.hash.slice(1)!==code)history.replaceState(history.state,'',location.pathname+location.search+'#'+code);
     connect();
   });
-  if(!S.name){const n=document.getElementById('nm');if(n&&S.code)n.focus()}
+  if(!S.name){const n=document.getElementById('nm');if(n&&LINK)n.focus()}
 }
+function readName(){
+  const el=document.getElementById('nm');const nm=el?el.value.trim().replace(/\s+/g,' '):S.name;
+  if(!nm){S.err='p_name';formV();return false}
+  S.name=nm;store.set('pname',nm);store.set('pg',S.g);return true;
+}
+/* host a session from this phone: the game engine runs in a hidden frame */
+function startHost(code){
+  stopHost();S.hosting=true;S.status='opening';S.err='';formV();
+  const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.style.cssText='position:absolute;width:0;height:0;border:0;visibility:hidden';
+  f.src='tv.html?embed=1&code='+code+(Net.local()?'&local=1':'');document.body.appendChild(f);S.frame=f;
+  clearTimeout(S.hostT);S.hostT=setTimeout(()=>{if(S.status==='opening'){stopHost();S.status='form';S.err='p_netErr';formV()}},20000);
+}
+function stopHost(){
+  if(S.frame){try{S.frame.contentWindow.postMessage({jeerah:2,k:'end'},location.origin)}catch(e){}const f=S.frame;S.frame=null;setTimeout(()=>f.remove(),80)}
+  S.hosting=false;store.set('phost','');
+}
+addEventListener('message',e=>{
+  if(e.origin!==location.origin||!e.data||e.data.jeerah!==1||!S.frame||e.source!==S.frame.contentWindow)return;
+  if(e.data.k==='open'){clearTimeout(S.hostT);S.code=e.data.code;store.set('pcode',S.code);store.set('phost',S.code);if(S.status==='opening'){S.status='joining';connect()}}
+  else if(e.data.k==='error'&&S.status==='opening'){clearTimeout(S.hostT);stopHost();S.status='form';S.err='p_netErr';formV()}
+});
 function render(){
   const st=S.state;
   if(!st||S.status!=='in'){formV();return}
@@ -87,22 +114,59 @@ function render(){
   if(ph==='lobby')return lobbyV(st);
   if(ph==='roles')return rolesV(st);
   if(ph==='end')return endV(st);
-  if(st.view==='out')return outV(st);
   if(st.view==='task')return taskV(st);
+  if(st.solo&&(ph==='night'||ph==='vote')&&st.view==='out')return outV(st);
+  if(st.solo&&st.view!=='wait')return pubV(st);
+  if(st.view==='out')return outV(st);
   if(st.view==='wait')return waitV(st);
   return screenV(st);
 }
+function av(p){return '<span class="av '+p.g+'">'+esc(p.name.slice(0,1))+'</span>'}
+function cards(list,opt){
+  opt=opt||{};const seen=S.seen,now={};
+  const h=list.map(p=>{now[p.name]=1;const fresh=opt.pop&&!seen[p.name];
+    const sub=p.on===false?t('h_away'):p.host?t('h_host'):p.me?t('h_you'):'';
+    return '<div class="pcard'+(fresh?' new':'')+(p.on===false?' off':'')+(p.done?' done':'')+'">'+av(p)+'<span class="nm"><b>'+esc(p.name)+'</b>'+(sub?'<span>'+sub+'</span>':'')+'</span>'+(p.done?'<span class="tk">'+I.check+'</span>':'')+'</div>'}).join('');
+  if(opt.pop)S.seen=now;
+  let empty='';for(let i=0;i<(opt.empty||0);i++)empty+='<div class="pcard empty"><span class="av"></span><span class="nm"><span>'+t('h_wait')+'</span></span></div>';
+  return '<div class="pcards">'+h+empty+'</div>';
+}
 function lobbyV(st){
-  const rows=st.players.map(p=>'<div class="row"><span class="name">'+esc(p.name)+'</span><span class="gbtn '+p.g+'">'+I[p.g]+'</span></div>').join('');
+  const n=st.players.length,need=Math.max(0,st.min-n);
   show('night',top(st)+
-    '<div class="stack g8"><span class="kicker">'+t('p_code')+' <b dir="ltr">'+esc(st.code)+'</b></span><h1>'+t('p_inLobby')+'</h1>'+
-    '<p class="lead">'+(st.host?t('p_youHost'):t('p_waitHost'))+'</p></div>'+
-    '<div class="list mt24">'+rows+'</div>'+
+    '<div class="codebox">'+(st.url?'<div class="qr">'+qrSVG(st.url)+'</div>':'')+'<div class="stack"><span class="kicker">'+t('p_code')+'</span><b class="bigcode" dir="ltr">'+esc(st.code)+'</b>'+(st.url?'<span class="small">'+t('h_share')+'</span>':'')+'</div></div>'+
+    '<div class="whohead mt24"><h2>'+t('p_players')+'</h2><span class="small">'+t('h_count',{n:num(n),m:num(st.max||16)})+'</span></div>'+
+    cards(st.players,{pop:true,empty:need})+
+    '<p class="lead mt16">'+(need?t('p_waitingN',{n:num(st.min)}):st.host?t('h_full'):t('p_waitHost'))+'</p>'+
     '<div class="foot">'+(st.host?'<button class="btn" data-act="ctl" '+(st.ctl?'':'disabled')+'>'+(st.ctl?esc(st.ctl):t('p_waitingN',{n:num(st.min)}))+'</button>':'')+
     '<button class="btn ghost" data-act="menu">'+t('p_leave')+'</button></div>','lobby');
 }
+/* shared screens when there is no big screen */
+function pubV(st){
+  const p=st.pub||{},ph=st.phase,me=st.me;let h='',theme='day';
+  const note=me.alive?'':'<p class="small center-t mt16">'+tg('h_out',me.g)+'</p>';
+  if(ph==='morning'){
+    h='<h1>'+t('mornTitle')+'</h1>'+(p.report||[]).map((r,i)=>'<div class="rep" style="animation-delay:'+(.2+i*.5)+'s">'+(r.role?'<img src="'+art(r.role,r.g,'face')+'" alt="">':'')+
+      '<div><p>'+(r.name?tg(r.k,r.g,{name:esc(r.name)}):t(r.k))+'</p>'+(r.role?'<p class="small">'+tg('was',r.g,{role:'<b style="color:'+teamCol(r.role)+'">'+rn(r.role,r.g)+'</b>'})+'</p>':'')+'</div></div>').join('');
+  }else if(ph==='council'){
+    h='<h1>'+t('councilTitle')+'</h1><p class="lead">'+t('councilLead')+'</p>'+(p.timer?'<div class="clockp" id="clock">'+fmt(left(p))+'</div>':'')+cards(p.players||[]);
+  }else if(ph==='tally'){
+    h='<h1>'+t('tallyTitle')+'</h1>'+((p.rows||[]).length?'<div class="tallyp">'+p.rows.map((r,i)=>'<div class="trow'+(r.top&&!p.tied?' top':'')+'" style="animation-delay:'+(.2+i*.25)+'s">'+av(r)+'<span class="nm">'+esc(r.name)+'</span><span class="dots">'+Array(r.n).fill('<i></i>').join('')+'</span><b>'+num(r.n)+'</b></div>').join('')+'</div>':'<p class="lead">'+t('noVotes')+'</p>');
+  }else if(ph==='verdict'||ph==='solid'){
+    if(p.tie)h='<div class="stack center g8 grow" style="justify-content:center"><h1>'+t('tie')+'</h1><p class="lead">'+t('tieLead')+'</p></div>';
+    else if(p.show){const s=p.show;theme='night';
+      h='<div class="portrait mt16"><img src="'+art(s.role,s.g,'bust')+'" alt=""></div><div class="stack center g4"><span class="kicker">'+(p.by?tg('solidOut',p.by.g,{a:esc(p.by.name)}):t('evicted'))+'</span><h1>'+esc(s.name)+'</h1><span class="small">'+tg('truth',s.g)+'</span><h2 style="color:'+teamCol(s.role)+'">'+rn(s.role,s.g)+'</h2>'+(p.waiting?'<p class="lead">'+t('solidKick')+'</p>':'')+'</div>';}
+  }else{
+    theme=ph==='vote'?'day':'night';
+    h='<h1>'+t('p_waitOthers')+'</h1>'+cards(p.players||[]);
+  }
+  show(theme,top(st)+h+note+ctl(st),'pub'+ph+st.round+(p.by?1:0));
+}
+function left(p){return Math.max(0,p.paused?p.left:p.left-Math.floor((Date.now()-S.at)/1000))}
+setInterval(()=>{const st=S.state;if(!st||st.phase!=='council'||!st.pub||!st.pub.timer)return;const c=document.getElementById('clock');if(c){const l=left(st.pub);c.textContent=fmt(l);c.classList.toggle('low',l<=10)}},500);
 function rolesV(st){
   const me=st.me,team=ROLES[me.role].team;
+  if(st.ready&&st.solo)return pubV(st);
   if(st.ready){return show('night',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1><p class="lead">'+t('p_waitOthers')+'</p></div>'+ctl(st),'rready')}
   const extra=me.role==='saboteur'&&st.mates.length?'<br><b style="color:var(--bad);font-weight:600">'+t('yourTeam',{names:st.mates.map(esc).join('، ')})+'</b>':'';
   show('night',top(st)+
@@ -146,18 +210,24 @@ function waitV(st){
   let res='';
   if(st.smart){const r=st.smart;res='<div class="result"><span class="kicker">'+t('resTitle')+'</span><h2 style="color:var(--'+(r.sab?'bad':'good')+')">'+tg(r.sab?'isSab':'notSab',r.g,{name:esc(r.name)})+'</h2></div>'}
   show(night?'night':'day',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+(res||bigIcon(night?I.moon:I.check))+
-    '<h2>'+t('p_waitOthers')+'</h2><p class="lead">'+(night?t('p_closeEyes'):t('hintVote'))+'</p></div>'+ctl(st),'wait'+st.phase+st.round+(st.smart?1:0));
+    '<h2>'+t('p_waitOthers')+'</h2><p class="lead">'+(night?t('p_closeEyes'):t('hintVote'))+'</p></div>'+(st.pub&&st.pub.players?cards(st.pub.players):'')+ctl(st),'wait'+st.phase+st.round+(st.smart?1:0));
 }
 function screenV(st){
   show(st.phase==='night'?'night':'day',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1></div>'+ctl(st),'screen'+st.phase);
 }
 function outV(st){
   const me=st.me;
-  show('night',top(st)+'<div class="portrait mt16"><img src="'+art(me.role,me.g,'bust')+'" alt=""></div><div class="stack center g8"><h1>'+tg('p_outTitle',me.g)+'</h1><p class="lead">'+t('p_outLead')+'</p></div>'+ctl(st),'out'+st.phase);
+  show('night',top(st)+'<div class="portrait mt16"><img src="'+art(me.role,me.g,'bust')+'" alt=""></div><div class="stack center g8"><h1>'+tg('p_outTitle',me.g)+'</h1><p class="lead">'+(st.solo?tg('h_out',me.g):t('p_outLead'))+'</p></div>'+ctl(st),'out'+st.phase);
+}
+function endCast(st){
+  const p=st.pub;if(!p||!p.cast)return '';
+  let title;if(p.winner==='good')title=t('winGood');else if(p.winner==='sab')title=t('winSab');else title=tg('winSolo',p.soloP?p.soloP.g:'m');
+  return '<div class="stack g4 mt16"><h2 class="center-t">'+title+'</h2>'+(p.sus?'<p class="small center-t">'+t('mostSus',{name:esc(p.sus)})+'</p>':'')+'</div><div class="list mt8">'+
+    p.cast.map(c=>'<div class="row'+(c.alive?'':' gone')+'"><span class="face sm"><img src="'+art(c.role,c.g,'face')+'" alt=""></span><span class="name">'+esc(c.name)+'</span><span class="note" style="color:'+teamCol(c.role)+'">'+rn(c.role,c.g)+'</span></div>').join('')+'</div>';
 }
 function endV(st){
   const me=st.me;
-  show('night',top(st)+'<div class="portrait mt16"><img src="'+art(me.role,me.g,'bust')+'" alt=""></div><div class="stack center g8"><span class="kicker">'+t('p_yourRole')+': '+rn(me.role,me.g)+'</span><h1 style="color:var(--'+(st.won?'good':'bad')+')">'+t(st.won?'p_youWon':'p_youLost')+'</h1><p class="lead">'+t('p_lookScreen')+'</p></div>'+ctl(st),'end'+st.round);
+  show('night',top(st)+'<div class="portrait mt16'+(st.pub&&st.pub.cast?' short':'')+'"><img src="'+art(me.role,me.g,'bust')+'" alt=""></div><div class="stack center g8"><span class="kicker">'+t('p_yourRole')+': '+rn(me.role,me.g)+'</span><h1 style="color:var(--'+(st.won?'good':'bad')+')">'+t(st.won?'p_youWon':'p_youLost')+'</h1>'+(st.pub&&st.pub.cast?'':'<p class="lead">'+t('p_lookScreen')+'</p>')+'</div>'+endCast(st)+ctl(st),'end'+st.round);
 }
 
 /* ---------- networking ---------- */
@@ -169,7 +239,7 @@ function connect(){
     msg(m){
       if(m.t==='reject'){S.status='form';S.err=m.reason==='full'?'full':m.reason;S.state=null;try{S.net.close()}catch(e){}formV();return}
       if(m.t==='state'){
-        const prev=S.state;S.state=m;S.status='in';S.dropped=false;
+        const prev=S.state;S.state=m;S.status='in';S.at=Date.now();S.dropped=false;
         if(m.lang&&m.lang!==S.lang){S.lang=m.lang;setLang()}
         if(!prev||prev.phase!==m.phase||prev.round!==m.round||(prev.view!==m.view)){S.sel=null;S.mode=null;if(prev&&prev.phase!==m.phase)vib(40)}
         render();
@@ -183,13 +253,13 @@ function send(m){if(S.net)S.net.send(m)}
 function closeSheet(){const s=app.querySelector('.sheet-wrap');if(s)s.remove()}
 function leaveSheet(){
   closeSheet();const w=document.createElement('div');w.className='sheet-wrap';
-  w.innerHTML='<div class="sheet"><div class="grab"></div><h2>'+t('p_leaveAsk')+'</h2><div class="foot"><button class="btn" data-act="close-sheet">'+t('stay')+'</button><button class="btn ghost" data-act="leave">'+t('p_leaveYes')+'</button></div></div>';
+  w.innerHTML='<div class="sheet"><div class="grab"></div><h2>'+t(S.hosting?'h_endAsk':'p_leaveAsk')+'</h2><div class="foot"><button class="btn" data-act="close-sheet">'+t('stay')+'</button><button class="btn ghost" data-act="leave">'+t('p_leaveYes')+'</button></div></div>';
   w.addEventListener('click',e=>{if(e.target===w)closeSheet()});app.appendChild(w);
 }
 function goHome(){
   clearTimeout(S.retry);
   if(S.status==='in')send({t:'leave'});
-  store.set('pcode','');S.status='form';S.state=null;
+  store.set('pcode','');S.status='form';S.state=null;stopHost();
   setTimeout(()=>{try{S.net&&S.net.close()}catch(e){}location.replace('index.html')},S.net?120:0);
 }
 
@@ -198,6 +268,7 @@ const A={
   lang(){S.lang=S.lang==='ar'?'en':'ar';store.set('lang',S.lang);setLang();render()},
   ctl(){send({t:'ctl'})},
   home(){goHome()},
+  host(){if(!readName())return;startHost(newCode())},
   menu(){leaveSheet()},
   'close-sheet'(){closeSheet()},
   leave(){goHome()},
@@ -226,6 +297,7 @@ Back.init({root:()=>false,back(){
   if(app.querySelector('.sheet-wrap')){closeSheet();return}
   if(S.status==='in')leaveSheet();else goHome();
 }});
-if(S.code&&S.name&&store.get('pcode','')===S.code)connect();else formV();
+if(!LINK&&S.name&&S.code&&store.get('phost','')===S.code)startHost(S.code);
+else if(S.code&&S.name&&store.get('pcode','')===S.code)connect();else formV();
 window.__join={S,A};
 })();

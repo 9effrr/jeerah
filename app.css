@@ -308,3 +308,46 @@ button.row:active{background:var(--tint)}
 .peek{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
 .peek .face{width:36px;height:36px}
 .home .modes2{display:flex;flex-direction:column;gap:8px}
+
+/* ---------- phone sessions ---------- */
+.codebox{display:flex;align-items:center;gap:16px;margin-top:8px}
+.codebox .qr{width:108px;height:108px;border-radius:16px;overflow:hidden;flex:none}
+.codebox .qr svg{width:100%;height:100%}
+.bigcode{font-family:var(--display);font-weight:400;font-size:46px;line-height:1.15;letter-spacing:.06em;color:var(--accent)}
+.whohead{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.pcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.pcard{display:flex;align-items:center;gap:10px;min-height:60px;min-width:0;padding:8px 12px;border-radius:18px;background:var(--raised);transition:opacity .2s}
+.pcard.new{animation:pop .45s var(--ease) both}
+.pcard.off{opacity:.45}
+.pcard.done{box-shadow:inset 0 0 0 1.5px var(--good)}
+.pcard.empty{background:none;border:1.5px dashed var(--tint);color:var(--muted)}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:700;font-size:17px;background:var(--tint)}
+.av.m{color:#A9C1EC;background:rgba(169,193,236,.16)}
+.av.f{color:#F27DA0;background:rgba(242,125,160,.16)}
+.pcard .nm{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.pcard .nm b{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard .nm span{font-size:12px;color:var(--muted)}
+.pcard .tk{width:20px;height:20px;flex:none;color:var(--good)}
+.pcard .tk svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round}
+@keyframes pop{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.clockp{font-family:var(--display);font-size:68px;line-height:1.1;text-align:center;font-variant-numeric:tabular-nums;margin-top:12px}
+.clockp.low{color:var(--bad)}
+.rep{display:flex;align-items:center;gap:14px;margin-top:18px;animation:rise .6s var(--ease) both}
+.rep img{width:64px;height:64px;border-radius:50%;flex:none;background:var(--tint);object-fit:cover}
+.rep p{font-size:17px;line-height:1.6}
+.tallyp{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.trow{display:flex;align-items:center;gap:10px;min-height:54px;padding:6px 12px;border-radius:18px;animation:rise .5s var(--ease) both}
+.trow.top{background:var(--raised)}
+.trow .nm{flex:1;font-size:17px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .dots{display:flex;gap:4px}
+.trow .dots i{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.trow b{font-variant-numeric:tabular-nums;min-width:18px;text-align:center}
+.portrait.short{flex:0 0 200px;min-height:0}
+.face.sm{width:38px;height:38px;flex:none}
+.row.gone{opacity:.5}
+
+.modes.cardsm{gap:10px;margin:24px 0 0}
+.modes.cardsm .mode{background:var(--raised);padding:18px 16px;border-radius:22px;gap:14px}
+.modes.cardsm .mode:active{transform:scale(.985)}
+.mic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--tint);color:var(--accent)}
+.mic svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
