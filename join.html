@@ -21,6 +21,6 @@
 <script src="data.js"></script>
 <script src="net.js"></script>
 <script src="join.js"></script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})</script>
+<script>if('serviceWorker' in navigator){if(window.Capacitor){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})}).catch(function(){})}else if(location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}}</script>
 </body>
 </html>
