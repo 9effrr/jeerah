@@ -4,7 +4,7 @@
 const T={
 ar:{
   tag:'من يخرّب بنايتنا؟',
-  meta:'لعبة جلسات · هاتف واحد · من ٥ إلى ١٦ جاراً',
+  meta:'حكاية جيران في بناية بمدينة السلطان هيثم',
   start:'ابدأ الحكاية', howto:'طريقة اللعب', cast:'الشخصيات', back:'رجوع',
   howTitle:'طريقة اللعب',
   howLead:'هاتف واحد يدور بين الجيران. بينكم مخربون يعبثون بالبناية ليلاً، ومهمتكم كشفهم قبل فوات الأوان.',
@@ -94,12 +94,13 @@ ar:{
   p_lookScreen:'انظروا إلى الشاشة', p_waitOthers:'بانتظار بقية الجيران', p_closeEyes:'تظاهر بأنك تؤدي مهمة، ولا تكشف شاشتك',
   p_outTitle:'غادرت البناية', p_outTitle_f:'غادرتِ البناية', p_outLead:'تابع الحكاية على الشاشة ولا تكشف شيئاً',
   p_youWon:'فزت', p_youLost:'خسرت', p_yourRole:'دورك', p_peek:'اضغط مطولاً لرؤية دورك', p_lost:'انقطع الاتصال، جارٍ إعادة الاتصال',
+  p_leaveAsk:'مغادرة الجلسة؟', p_leaveYes:'نعم، غادر', p_exit:'خروج إلى الرئيسية', p_exitAsk:'إنهاء الجلسة والخروج؟', p_exitYes:'نعم، اخرج',
   p_hostCtl:'تحكّم المضيف', p_leave:'مغادرة الجلسة', p_kicked:'أُزلت من الجلسة',
   male:'ذكر', female:'أنثى', men:'الرجال', women:'النساء'
 },
 en:{
   tag:'Who is wrecking our building?',
-  meta:'Party game · one phone · 5 to 16 neighbours',
+  meta:'A tale of neighbours in a building in Sultan Haitham City',
   start:'Start the story', howto:'How to play', cast:'Characters', back:'Back',
   howTitle:'How to play',
   howLead:'One phone goes around the group. Saboteurs are hiding among you and strike at night. Find them before it is too late.',
@@ -178,6 +179,7 @@ en:{
   p_lookScreen:'Look at the screen', p_waitOthers:'Waiting for the other neighbours', p_closeEyes:'Act busy and keep your screen hidden',
   p_outTitle:'You left the building', p_outLead:'Follow the story on the screen and keep quiet',
   p_youWon:'You won', p_youLost:'You lost', p_yourRole:'Your role', p_peek:'Press and hold to see your role', p_lost:'Connection lost, reconnecting',
+  p_leaveAsk:'Leave the session?', p_leaveYes:'Yes, leave', p_exit:'Exit to home', p_exitAsk:'End the session and exit?', p_exitYes:'Yes, exit',
   p_hostCtl:'Host controls', p_leave:'Leave session', p_kicked:'You were removed from the session',
   male:'Male', female:'Female', men:'Men', women:'Women'
 }};
@@ -187,7 +189,7 @@ const ROLES={
   legal:{team:'good',min:6}, solid:{team:'good',min:7}, complainer:{team:'solo',min:7}
 };
 const SPECIALS=['smart','fixer','legal','solid','complainer'];
-const ROLE_ORDER=['saboteur','resident','smart','fixer','legal','solid','complainer'];
+const ROLE_ORDER=['smart','resident','solid','legal','fixer','saboteur','complainer'];
 const MIN=5, MAX=16;
 window.JDATA={T,ROLES,SPECIALS,ROLE_ORDER,MIN,MAX};
 })();

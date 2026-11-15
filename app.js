@@ -93,7 +93,7 @@ function show(theme,html,cls,keep){
   void screen.offsetWidth;
   screen.classList.add('enter');
 }
-function view(fn){S.cur=fn;fn()}
+function view(fn){S.cur=fn;fn();Back.sync()}
 function floor(){
   const g=S.game;if(!g)return '';
   let txt,ic;
@@ -115,13 +115,13 @@ function toast(msg){
 }
 
 /* ---------- sheets ---------- */
-function closeSheet(){const s=app.querySelector('.sheet-wrap');if(s)s.remove()}
+function closeSheet(){const s=app.querySelector('.sheet-wrap');if(s)s.remove();Back.sync()}
 function sheet(html){
   closeSheet();
   const w=document.createElement('div');w.className='sheet-wrap';
   w.innerHTML='<div class="sheet"><div class="grab"></div>'+html+'</div>';
   w.addEventListener('click',e=>{if(e.target===w)closeSheet()});
-  app.appendChild(w);
+  app.appendChild(w);Back.sync();
 }
 function menuSheet(){
   const inGame=!!S.game;
@@ -583,6 +583,14 @@ document.addEventListener('click',e=>{
 });
 
 setLang();
+Back.init({
+  root:()=>S.cur===home&&!S.game&&!app.querySelector('.sheet-wrap'),
+  back(){
+    if(app.querySelector('.sheet-wrap')){closeSheet();return}
+    if(S.game){quitSheet();return}
+    view(home);
+  }
+});
 view(home);
 window.__jeerah={S,A,P,alive};
 })();

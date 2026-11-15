@@ -227,6 +227,7 @@ const I={
   home:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
   gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   moon:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>',
   up:'<svg viewBox="0 0 10 10"><path d="M5 1.5l4 7H1z"/></svg>',down:'<svg viewBox="0 0 10 10"><path d="M5 8.5l4-7H1z"/></svg>'
 };
@@ -257,14 +258,15 @@ function bar(){
     '<button data-act="sound" aria-label="'+t('sound')+'">'+(UI.sound?I.vol:I.mute)+'</button>'+
     '<button data-act="lang">'+(UI.lang==='ar'?'EN':'ع')+'</button>'+
     '<button data-act="full" aria-label="Fullscreen">'+I.full+'</button>'+
-    (G.phase!=='lobby'?'<button data-act="lobby" aria-label="'+t('p_lobby')+'">'+I.home+'</button>':'')+'</div></header>';
+    (G.phase!=='lobby'?'<button data-act="lobby" aria-label="'+t('p_lobby')+'">'+I.home+'</button>':'')+
+    '<button data-act="exit" aria-label="'+t('p_exit')+'">'+I.x+'</button></div></header>';
 }
 function primaryBtn(){
   if(!primaryReady())return '';
   return '<button class="pbtn" data-act="primary">'+primaryLabel()+'<kbd>Space</kbd></button>';
 }
 function render(){
-  if(!G){root.innerHTML='<div class="center"><div class="spinner"></div><p>'+t('p_connecting')+'</p></div>';return}
+  if(!G){root.innerHTML='<div class="center"><div class="spinner"></div><p>'+t('p_connecting')+'</p><button class="ghost" data-act="exit-yes">'+t('p_exit')+'</button></div>';return}
   const ph=G.phase;root.dataset.phase=ph;
   let h='';
   if(ph==='lobby')h=lobby();
@@ -384,6 +386,12 @@ const A={
   lobby(){stopVo();music(false);G.phase='lobby';G.players.forEach((p,i)=>{p.role=null;p.alive=true;p.ready=false;p.apt=apt(i)});update()},
   pause(){G.paused=!G.paused;render()},
   plus30(){G.left+=30;render()},
+  exit(){
+    if(G.phase==='lobby'&&!G.players.length){leaveTV();return}
+    let w=document.querySelector('.sheet-wrap');if(!w){w=document.createElement('div');w.className='sheet-wrap';document.body.appendChild(w);w.addEventListener('click',e=>{if(e.target===w)w.remove()})}
+    w.innerHTML='<div class="sheet"><h2>'+t('p_exitAsk')+'</h2><button class="pbtn" data-act="close-cfg">'+t('stay')+'</button><button class="ghost" style="align-self:center" data-act="exit-yes">'+t('p_exitYes')+'</button></div>';
+  },
+  'exit-yes'(){leaveTV()},
   'roles-cfg':cfgSheet,
   'close-cfg'(){const w=document.querySelector('.sheet-wrap');if(w)w.remove();render()},
   'sab-'(){const c=compose(Math.max(G.players.length,MIN));UI.cfg.sabs=Math.max(1,c.sabs-1);store.set('cfg',UI.cfg);cfgSheet()},
@@ -394,6 +402,7 @@ const A={
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(f)f(el)});
 document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!document.querySelector('.sheet-wrap')){e.preventDefault();if(G&&primaryReady())primary()}});
 
+function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem('jeerah:tv')}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html')}
 function setLang(){document.documentElement.lang=UI.lang;document.documentElement.dir=UI.lang==='ar'?'rtl':'ltr'}
 
 /* ---------- boot ---------- */
@@ -408,9 +417,10 @@ function boot(){
     connect(){},
     msg:onMsg,
     close:onClose,
-    error(e){if(e&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='browser-incompatible')){root.innerHTML='<div class="center"><p>'+t('p_netErr')+'</p><button class="pbtn" onclick="location.reload()">'+t('p_retry')+'</button></div>'}}
+    error(e){if(e&&(e.type==='network'||e.type==='server-error'||e.type==='socket-error'||e.type==='browser-incompatible')){root.innerHTML='<div class="center"><p>'+t('p_netErr')+'</p><button class="pbtn" onclick="location.reload()">'+t('p_retry')+'</button><button class="ghost" data-act="exit-yes">'+t('p_exit')+'</button></div>'}}
   });
 }
+Back.init({root:()=>false,back(){const w=document.querySelector('.sheet-wrap');if(w){w.remove();return}A.exit()}});
 window.__tv={get G(){return G},primary,A};
 boot();
 })();

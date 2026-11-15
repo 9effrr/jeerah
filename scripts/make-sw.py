@@ -1,6 +1,6 @@
 import os,json,time
 root=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-keep=['index.html','tv.html','join.html','app.css','tv.css','app.js','tv.js','join.js','data.js','net.js','manifest.webmanifest','assets','lib']
+keep=['index.html','tv.html','join.html','app.css','tv.css','app.js','tv.js','join.js','data.js','back.js','net.js','manifest.webmanifest','assets','lib']
 files=[]
 for k in keep:
     p=os.path.join(root,k)

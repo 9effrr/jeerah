@@ -29,7 +29,9 @@ const I={
   tv:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
   moon:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>',
   up:'<svg viewBox="0 0 10 10"><path d="M5 1.5l4 7H1z"/></svg>',down:'<svg viewBox="0 0 10 10"><path d="M5 8.5l4-7H1z"/></svg>',
-  chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>'
+  chev:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  menu:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
 };
 
 function show(theme,html,key){
@@ -48,7 +50,7 @@ function floor(st){
 }
 function top(st){
   const me=st.me;
-  return '<header class="top"><span class="side"></span>'+floor(st)+'<span class="side end">'+(me.role?'<button class="peek" id="peek" aria-label="'+t('p_yourRole')+'"><span class="face"><img src="'+art(me.role,me.g,'face')+'" alt=""></span></button>':'')+'</span></header>'+
+  return '<header class="top"><span class="side"><button class="icon-btn" data-act="menu" aria-label="'+t('menu')+'">'+I.menu+'</button></span>'+floor(st)+'<span class="side end">'+(me.role?'<button class="peek" id="peek" aria-label="'+t('p_yourRole')+'"><span class="face"><img src="'+art(me.role,me.g,'face')+'" alt=""></span></button>':'')+'</span></header>'+
     (S.dropped?'<p class="banner">'+t('p_lost')+'</p>':'');
 }
 function ctl(st){return st.ctl?'<div class="hostctl"><span class="small">'+t('p_hostCtl')+'</span><button class="btn quiet" data-act="ctl">'+esc(st.ctl)+'</button></div>':''}
@@ -56,6 +58,7 @@ function ctl(st){return st.ctl?'<div class="hostctl"><span class="small">'+t('p_
 /* ---------- screens ---------- */
 function formV(){
   show('night',
+    '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span><span></span><span class="side end"></span></header>'+
     '<div class="joinhero"><div class="logo" role="img" aria-label="جيرة"></div></div>'+
     '<h1 class="center-t">'+t('p_joinTitle')+'</h1>'+
     '<form id="jf" class="stack g12 mt24">'+
@@ -96,7 +99,7 @@ function lobbyV(st){
     '<p class="lead">'+(st.host?t('p_youHost'):t('p_waitHost'))+'</p></div>'+
     '<div class="list mt24">'+rows+'</div>'+
     '<div class="foot">'+(st.host?'<button class="btn" data-act="ctl" '+(st.ctl?'':'disabled')+'>'+(st.ctl?esc(st.ctl):t('p_waitingN',{n:num(st.min)}))+'</button>':'')+
-    '<button class="btn ghost" data-act="leave">'+t('p_leave')+'</button></div>','lobby');
+    '<button class="btn ghost" data-act="menu">'+t('p_leave')+'</button></div>','lobby');
 }
 function rolesV(st){
   const me=st.me,team=ROLES[me.role].team;
@@ -177,12 +180,27 @@ function connect(){
   });
 }
 function send(m){if(S.net)S.net.send(m)}
+function closeSheet(){const s=app.querySelector('.sheet-wrap');if(s)s.remove()}
+function leaveSheet(){
+  closeSheet();const w=document.createElement('div');w.className='sheet-wrap';
+  w.innerHTML='<div class="sheet"><div class="grab"></div><h2>'+t('p_leaveAsk')+'</h2><div class="foot"><button class="btn" data-act="close-sheet">'+t('stay')+'</button><button class="btn ghost" data-act="leave">'+t('p_leaveYes')+'</button></div></div>';
+  w.addEventListener('click',e=>{if(e.target===w)closeSheet()});app.appendChild(w);
+}
+function goHome(){
+  clearTimeout(S.retry);
+  if(S.status==='in')send({t:'leave'});
+  store.set('pcode','');S.status='form';S.state=null;
+  setTimeout(()=>{try{S.net&&S.net.close()}catch(e){}location.replace('index.html')},S.net?120:0);
+}
 
 const A={
   g(el){S.g=el.dataset.g;store.set('pg',S.g);document.querySelectorAll('.gpick button').forEach(b=>b.classList.toggle('on',b.dataset.g===S.g))},
   lang(){S.lang=S.lang==='ar'?'en':'ar';store.set('lang',S.lang);setLang();render()},
   ctl(){send({t:'ctl'})},
-  leave(){send({t:'leave'});S.status='form';S.state=null;try{S.net.close()}catch(e){}formV()},
+  home(){goHome()},
+  menu(){leaveSheet()},
+  'close-sheet'(){closeSheet()},
+  leave(){goHome()},
   ready(){send({t:'ready'})},
   pick(el){S.sel=el.dataset.id;screen.querySelectorAll('.row.sel').forEach(r=>r.classList.remove('sel'));el.classList.add('sel');const b=screen.querySelector('[data-act="send"]');if(b)b.disabled=false},
   mode(el){const m=el.dataset.m;if(m==='none'){send({t:'act',mode:'none'});return}S.mode=m;render()},
@@ -204,6 +222,10 @@ document.addEventListener('pointerdown',e=>{const p=e.target.closest('#peek');if
 addEventListener('hashchange',()=>{const c=hashCode();if(c&&c!==S.code){S.code=c;S.status='form';S.state=null;formV()}});
 
 setLang();
+Back.init({root:()=>false,back(){
+  if(app.querySelector('.sheet-wrap')){closeSheet();return}
+  if(S.status==='in')leaveSheet();else goHome();
+}});
 if(S.code&&S.name&&store.get('pcode','')===S.code)connect();else formV();
 window.__join={S,A};
 })();
