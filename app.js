@@ -146,7 +146,8 @@ function home(){
     '<div class="hero"><div class="logo" role="img" aria-label="جيرة Jeerah"></div>'+
       '<p class="tag">'+t('tag')+'</p><p class="meta">'+t('meta')+'</p></div>'+
     '<div class="foot"><button class="btn" data-act="enter">'+t('enterB')+'</button>'+
-      '<div class="links"><button class="btn ghost" data-act="howto">'+t('howto')+'</button><button class="btn ghost" data-act="cast">'+t('cast')+'</button></div></div>',
+      '<div class="links"><button class="btn ghost" data-act="howto">'+t('howto')+'</button><button class="btn ghost" data-act="cast">'+t('cast')+'</button></div></div>'+
+    '<p class="credit">'+(window.HAAY_LOGO?'<img src="assets/haay.png" alt="">':'')+'<span>'+t('credit')+'</span></p>',
     'home');
 }
 function enterV(){

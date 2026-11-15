@@ -82,7 +82,7 @@ h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.25}
 
 /* home */
 .home{padding:0 0 calc(var(--sab) + 20px)}
-.home .cover{position:relative;flex:none;width:100%;height:clamp(260px,calc(100dvh - 348px),126vw);max-height:580px;overflow:hidden}
+.home .cover{position:relative;flex:none;width:100%;height:clamp(240px,calc(100dvh - 404px),126vw);max-height:580px;overflow:hidden}
 .home .cover img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;-webkit-mask-image:linear-gradient(#000 62%,transparent 99%);mask-image:linear-gradient(#000 62%,transparent 99%);animation:fade .9s var(--ease) both}
 .home .bar{position:absolute;inset:calc(var(--sat) + 8px) 12px auto 12px;display:flex;justify-content:space-between;z-index:2}
 .home .bar .icon-btn,.home .bar .text-btn{color:#EFE9DC;background:rgba(22,30,45,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -351,3 +351,7 @@ button.row:active{background:var(--tint)}
 .modes.cardsm .mode:active{transform:scale(.985)}
 .mic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--tint);color:var(--accent)}
 .mic svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+.home .credit{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:18px;padding:0 24px;font-size:12px;font-weight:300;letter-spacing:.01em;color:var(--muted)}
+.home .credit b{font-weight:500;color:var(--ink2)}
+.home .credit img{height:16px;width:auto;opacity:.85}

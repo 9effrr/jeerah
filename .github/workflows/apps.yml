@@ -63,6 +63,11 @@ jobs:
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
           mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          for l in en ar; do mkdir -p Payload/App.app/$l.lproj; done
+          printf '"CFBundleDisplayName" = "Jeerah";\n"CFBundleName" = "Jeerah";\n' > Payload/App.app/en.lproj/InfoPlist.strings
+          printf '"CFBundleDisplayName" = "جيرة";\n"CFBundleName" = "جيرة";\n' > Payload/App.app/ar.lproj/InfoPlist.strings
+          plutil -replace CFBundleDisplayName -string Jeerah Payload/App.app/Info.plist
+          plutil -replace CFBundleLocalizations -json '["en","ar"]' Payload/App.app/Info.plist
           zip -qr jeerah-unsigned.ipa Payload
       - uses: actions/upload-artifact@v4
         with:
