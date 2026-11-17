@@ -191,3 +191,8 @@ h3{font-size:calc(2.2*var(--u));font-weight:600}
   .lobby{grid-template-rows:auto 1fr}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.brand .backb{display:inline-flex;align-items:center;gap:calc(.5*var(--u));height:calc(5*var(--u));padding:0 calc(1.6*var(--u)) 0 calc(1.1*var(--u));border-radius:calc(2.5*var(--u));background:var(--line);color:var(--ink);font-size:calc(1.9*var(--u));font-weight:600;margin-inline-end:calc(1.4*var(--u))}
+.brand .backb svg{width:calc(2.4*var(--u));height:calc(2.4*var(--u));stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+[dir="ltr"] .brand .backb svg{transform:scaleX(-1)}
+button:focus-visible{outline:calc(.35*var(--u)) solid var(--accent);outline-offset:calc(.3*var(--u))}

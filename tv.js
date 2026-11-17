@@ -249,6 +249,7 @@ const I={
   home:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
   gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>',
   check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
   x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   moon:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/></svg>',
   up:'<svg viewBox="0 0 10 10"><path d="M5 1.5l4 7H1z"/></svg>',down:'<svg viewBox="0 0 10 10"><path d="M5 8.5l4-7H1z"/></svg>'
@@ -275,13 +276,13 @@ function floorChip(){
   return '<span class="floor">'+I.up+t('dayFloor',{n:num(G.round)})+'</span>';
 }
 function bar(){
-  return '<header class="tvbar"><div class="brand"><span class="mark"></span>'+floorChip()+'</div>'+
+  return '<header class="tvbar"><div class="brand"><button class="backb" data-act="exit">'+I.back+'<span>'+t(G.phase==='lobby'?'back':'p_exit')+'</span></button><span class="mark"></span>'+floorChip()+'</div>'+
     '<div class="tools"><span class="code">'+t('p_code')+' <b>'+G.code+'</b></span>'+
     '<button data-act="sound" aria-label="'+t('sound')+'">'+(UI.sound?I.vol:I.mute)+'</button>'+
     '<button data-act="lang">'+(UI.lang==='ar'?'EN':'ع')+'</button>'+
     '<button data-act="full" aria-label="Fullscreen">'+I.full+'</button>'+
     (G.phase!=='lobby'?'<button data-act="lobby" aria-label="'+t('p_lobby')+'">'+I.home+'</button>':'')+
-    '<button data-act="exit" aria-label="'+t('p_exit')+'">'+I.x+'</button></div></header>';
+    '</div></header>';
 }
 function primaryBtn(){
   if(!primaryReady())return '';
@@ -410,7 +411,7 @@ const A={
   pause(){G.paused=!G.paused;render()},
   plus30(){G.left+=30;render()},
   exit(){
-    if(G.phase==='lobby'&&!G.players.length){leaveTV();return}
+    if(G.phase==='lobby'&&!G.players.some(p=>p.online!==false)){leaveTV();return}
     let w=document.querySelector('.sheet-wrap');if(!w){w=document.createElement('div');w.className='sheet-wrap';document.body.appendChild(w);w.addEventListener('click',e=>{if(e.target===w)w.remove()})}
     w.innerHTML='<div class="sheet"><h2>'+t('p_exitAsk')+'</h2><button class="pbtn" data-act="close-cfg">'+t('stay')+'</button><button class="ghost" style="align-self:center" data-act="exit-yes">'+t('p_exitYes')+'</button></div>';
   },
@@ -423,10 +424,18 @@ const A={
   timer(el){UI.cfg.timer=+el.dataset.s;store.set('cfg',UI.cfg);cfgSheet()}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(f)f(el)});
-document.addEventListener('keydown',e=>{if((e.code==='Space'||e.code==='Enter')&&!document.querySelector('.sheet-wrap')){e.preventDefault();if(G&&primaryReady())primary()}});
+document.addEventListener('keydown',e=>{
+  if(EMB)return;
+  const k=e.key,sheet=document.querySelector('.sheet-wrap');
+  if(k==='Escape'||k==='Backspace'||k==='BrowserBack'||k==='GoBack'||e.keyCode===461||e.keyCode===10009){
+    if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;
+    e.preventDefault();if(sheet)sheet.remove();else A.exit();return}
+  if(k==='Enter'&&document.activeElement&&document.activeElement.tagName==='BUTTON')return;
+  if((e.code==='Space'||k==='Enter')&&!sheet){e.preventDefault();if(G&&primaryReady())primary()}
+});
 
 addEventListener('message',e=>{if(EMB&&e.origin===location.origin&&e.data&&e.data.jeerah===2&&e.data.k==='end'){try{sessionStorage.removeItem(SKEY)}catch(x){}try{net&&net.close()}catch(x){}}});
-function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem(SKEY)}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html')}
+function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem(SKEY)}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html?m=1')}
 function setLang(){document.documentElement.lang=UI.lang;document.documentElement.dir=UI.lang==='ar'?'rtl':'ltr'}
 
 /* ---------- boot ---------- */

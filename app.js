@@ -600,6 +600,6 @@ Back.init({
     view(home);
   }
 });
-view(home);
+if(/[?&]m=1/.test(location.search)){history.replaceState(null,'',location.pathname);view(enterV)}else view(home);
 window.__jeerah={S,A,P,alive};
 })();

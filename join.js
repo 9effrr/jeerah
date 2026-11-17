@@ -260,7 +260,7 @@ function goHome(){
   clearTimeout(S.retry);
   if(S.status==='in')send({t:'leave'});
   store.set('pcode','');S.status='form';S.state=null;stopHost();
-  setTimeout(()=>{try{S.net&&S.net.close()}catch(e){}location.replace('index.html')},S.net?120:0);
+  setTimeout(()=>{try{S.net&&S.net.close()}catch(e){}location.replace('index.html?m=1')},S.net?120:0);
 }
 
 const A={
