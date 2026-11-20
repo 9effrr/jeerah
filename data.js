@@ -17,7 +17,7 @@ ar:{
   namePh:'اسم الجار', needMore:'أضف {n} بعد', ready:'{n} جيران جاهزون', dup:'هذا الاسم موجود', full:'البناية ممتلئة',
   deal:'وزّع الأدوار', rolesIn:'أدوار الجولة', edit:'تعديل',
   sheetRoles:'أدوار الجولة', sabCount:'عدد المخربين', sabAuto:'يُحدَّد تلقائياً حسب عدد الجيران',
-  needs:'يحتاج {n} جيران', timer:'مؤقّت النقاش', timerD:'دقائق لكل مجلس', off:'بدون', done:'تم',
+  needs:'يحتاج {n} جيران', noRoom:'لا يتسع له عدد الجيران الآن', pickRoles:'اختر الأدوار التي تريدها في هذه الجولة', timer:'مؤقّت النقاش', timerD:'دقائق لكل مجلس', off:'بدون', done:'تم',
   nRes:'{n} ساكن', nSab:'{n} مخرب',
   passTo:'مرّر الهاتف إلى', iam:'أنا {name}', apt:'شقة {n}',
   hintDeal:'تأكد أن أحداً لا يرى الشاشة',
@@ -116,7 +116,7 @@ en:{
   namePh:'Neighbour name', needMore:'Add {n} more', ready:'{n} neighbours ready', dup:'That name is taken', full:'The building is full',
   deal:'Deal the roles', rolesIn:'Roles this round', edit:'Edit',
   sheetRoles:'Round roles', sabCount:'Saboteurs', sabAuto:'Set from the number of neighbours',
-  needs:'Needs {n} neighbours', timer:'Debate timer', timerD:'Minutes per council', off:'Off', done:'Done',
+  needs:'Needs {n} neighbours', noRoom:'Not enough neighbours for it right now', pickRoles:'Pick the roles you want this round', timer:'Debate timer', timerD:'Minutes per council', off:'Off', done:'Done',
   nRes:'{n} residents', nSab:'{n} saboteurs',
   passTo:'Pass the phone to', iam:'I am {name}', apt:'Flat {n}',
   hintDeal:'Make sure nobody can see the screen',
@@ -191,8 +191,8 @@ en:{
 }};
 
 const ROLES={
-  saboteur:{team:'sab'}, resident:{team:'good'}, smart:{team:'good',min:5}, fixer:{team:'good',min:5},
-  legal:{team:'good',min:6}, solid:{team:'good',min:7}, complainer:{team:'solo',min:7}
+  saboteur:{team:'sab'}, resident:{team:'good'}, smart:{team:'good'}, fixer:{team:'good'},
+  legal:{team:'good'}, solid:{team:'good'}, complainer:{team:'solo'}
 };
 const SPECIALS=['smart','fixer','legal','solid','complainer'];
 const ROLE_ORDER=['smart','resident','solid','legal','fixer','saboteur','complainer'];

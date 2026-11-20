@@ -196,3 +196,6 @@ h3{font-size:calc(2.2*var(--u));font-weight:600}
 .brand .backb svg{width:calc(2.4*var(--u));height:calc(2.4*var(--u));stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 [dir="ltr"] .brand .backb svg{transform:scaleX(-1)}
 button:focus-visible{outline:calc(.35*var(--u)) solid var(--accent);outline-offset:calc(.3*var(--u))}
+
+.opt.off .txt{opacity:.5}
+.opt .txt span.warn{color:var(--accent)}

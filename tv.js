@@ -38,7 +38,7 @@ const alive=()=>G.players.filter(p=>p.alive);
 function compose(n){
   const auto=n<=6?1:n<=9?2:n<=13?3:4,maxS=Math.max(1,Math.ceil(n/2)-1);
   const sabs=Math.min(maxS,Math.max(1,UI.cfg.sabs||auto));
-  let sp=SPECIALS.filter(r=>UI.cfg.roles[r]&&n>=ROLES[r].min);
+  let sp=SPECIALS.filter(r=>UI.cfg.roles[r]);
   while(sabs+sp.length>n)sp.pop();
   return{sabs,sp,res:n-sabs-sp.length};
 }
@@ -388,7 +388,7 @@ function endV(){
 function cfgSheet(){
   const n=Math.max(G.players.length,MIN),c=compose(n);
   let h='<div class="sheet"><h2>'+t('sheetRoles')+'</h2><div class="opt"><span class="txt"><b>'+t('sabCount')+'</b><span>'+t('sabAuto')+'</span></span><span class="stepper"><button data-act="sab-">−</button><span>'+num(c.sabs)+'</span><button data-act="sab+">+</button></span></div>';
-  SPECIALS.forEach(r=>{const na=n<ROLES[r].min;h+='<div class="opt '+(na?'na':'')+'"><span class="txt"><b>'+rn(r)+'</b><span>'+(na?t('needs',{n:num(ROLES[r].min)}):t('d_'+r))+'</span></span><button class="switch '+(UI.cfg.roles[r]&&!na?'on':'')+'" data-act="role" data-r="'+r+'"></button></div>'});
+  SPECIALS.forEach(r=>{const on=!!UI.cfg.roles[r],na=on&&c.sp.indexOf(r)<0;h+='<div class="opt '+(on?'':'off')+'"><span class="txt"><b>'+rn(r)+'</b><span'+(na?' class="warn"':'')+'>'+(na?t('noRoom'):t('d_'+r))+'</span></span><button class="switch '+(on?'on':'')+'" data-act="role" data-r="'+r+'"></button></div>'});
   h+='<div class="opt"><span class="txt"><b>'+t('timer')+'</b><span>'+t('timerD')+'</span></span><span class="seg">'+[0,120,180,300].map(s=>'<button data-act="timer" data-s="'+s+'" class="'+(UI.cfg.timer===s?'on':'')+'">'+(s?num(s/60):t('off'))+'</button>').join('')+'</span></div>';
   h+='<button class="pbtn" data-act="close-cfg">'+t('done')+'</button></div>';
   let w=document.querySelector('.sheet-wrap');if(!w){w=document.createElement('div');w.className='sheet-wrap';document.body.appendChild(w);w.addEventListener('click',e=>{if(e.target===w)w.remove()})}
@@ -434,7 +434,8 @@ document.addEventListener('keydown',e=>{
   if((e.code==='Space'||k==='Enter')&&!sheet){e.preventDefault();if(G&&primaryReady())primary()}
 });
 
-addEventListener('message',e=>{if(EMB&&e.origin===location.origin&&e.data&&e.data.jeerah===2&&e.data.k==='end'){try{sessionStorage.removeItem(SKEY)}catch(x){}try{net&&net.close()}catch(x){}}});
+addEventListener('message',e=>{if(EMB&&e.origin===location.origin&&e.data&&e.data.jeerah===2&&e.data.k==='cfg'){Object.assign(UI.cfg,store.get('cfg',{}));push();return}
+  if(EMB&&e.origin===location.origin&&e.data&&e.data.jeerah===2&&e.data.k==='end'){try{sessionStorage.removeItem(SKEY)}catch(x){}try{net&&net.close()}catch(x){}}});
 function leaveTV(){stopVo();music(false);try{sessionStorage.removeItem(SKEY)}catch(e){}try{net&&net.close()}catch(e){}location.replace('index.html?m=1')}
 function setLang(){document.documentElement.lang=UI.lang;document.documentElement.dir=UI.lang==='ar'?'rtl':'ltr'}
 

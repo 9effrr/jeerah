@@ -1,7 +1,7 @@
 /* جيرة — player phone for the big-screen mode */
 (function(){
 'use strict';
-const {T,ROLES}=window.JDATA;
+const {T,ROLES,SPECIALS,MIN}=window.JDATA;
 const NS='jeerah:'+((location.search.match(/[?&]u=(\w+)/)||[])[1]||'');
 const store={get(k,d){try{const v=localStorage.getItem(NS+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(NS+k,JSON.stringify(v))}catch(e){}}};
 const app=document.getElementById('app'),screen=document.getElementById('screen');
@@ -138,7 +138,7 @@ function lobbyV(st){
     '<div class="whohead mt24"><h2>'+t('p_players')+'</h2><span class="small">'+t('h_count',{n:num(n),m:num(st.max||16)})+'</span></div>'+
     cards(st.players,{pop:true,empty:need})+
     '<p class="lead mt16">'+(need?t('p_waitingN',{n:num(st.min)}):st.host?t('h_full'):t('p_waitHost'))+'</p>'+
-    '<div class="foot">'+(st.host?'<button class="btn" data-act="ctl" '+(st.ctl?'':'disabled')+'>'+(st.ctl?esc(st.ctl):t('p_waitingN',{n:num(st.min)}))+'</button>':'')+
+    '<div class="foot">'+(st.host&&S.hosting?'<button class="btn quiet" data-act="cfg">'+t('sheetRoles')+'</button>':'')+(st.host?'<button class="btn" data-act="ctl" '+(st.ctl?'':'disabled')+'>'+(st.ctl?esc(st.ctl):t('p_waitingN',{n:num(st.min)}))+'</button>':'')+
     '<button class="btn ghost" data-act="menu">'+t('p_leave')+'</button></div>','lobby');
 }
 /* shared screens when there is no big screen */
@@ -250,6 +250,29 @@ function connect(){
   });
 }
 function send(m){if(S.net)S.net.send(m)}
+/* round roles, for whoever hosts from this phone (shared with the hidden host engine) */
+const cfgStore={get(){try{return JSON.parse(localStorage.getItem('jeerah:cfg'))||{}}catch(e){return{}}},set(v){try{localStorage.setItem('jeerah:cfg',JSON.stringify(v))}catch(e){}}};
+function getCfg(){const c=Object.assign({sabs:0,timer:180},cfgStore.get());c.roles=Object.assign({smart:true,fixer:true,legal:true,solid:true,complainer:true},c.roles||{});return c}
+function comp(c){
+  const n=Math.max(S.state&&S.state.players?S.state.players.length:0,MIN);
+  const auto=n<=6?1:n<=9?2:n<=13?3:4,maxS=Math.max(1,Math.ceil(n/2)-1),sabs=Math.min(maxS,Math.max(1,c.sabs||auto));
+  const sp=SPECIALS.filter(r=>c.roles[r]);while(sabs+sp.length>n)sp.pop();return{sabs,sp,maxS};
+}
+function setCfg(c){cfgStore.set(c);if(S.frame)try{S.frame.contentWindow.postMessage({jeerah:2,k:'cfg'},location.origin)}catch(e){}cfgSheet()}
+function cfgSheet(){
+  const c=getCfg(),k=comp(c),f=r=>'<span class="face sm"><img src="'+art(r,S.g,'face')+'" alt=""></span>';
+  let h='<h2>'+t('sheetRoles')+'</h2><p class="small">'+t('pickRoles')+'</p>'+
+    '<div class="opt">'+f('saboteur')+'<div class="txt"><b>'+t('sabCount')+'</b><span>'+t('sabAuto')+'</span></div><div class="stepper"><button data-act="sab-" '+(k.sabs<=1?'disabled':'')+'>−</button><span>'+num(k.sabs)+'</span><button data-act="sab+" '+(k.sabs>=k.maxS?'disabled':'')+'>+</button></div></div>';
+  SPECIALS.forEach(r=>{const on=!!c.roles[r],na=on&&k.sp.indexOf(r)<0;
+    h+='<div class="opt'+(on?'':' off')+'">'+f(r)+'<div class="txt"><b>'+rn(r,S.g)+'</b><span'+(na?' class="warn"':'')+'>'+(na?t('noRoom'):t('d_'+r))+'</span></div><button class="switch '+(on?'on':'')+'" data-act="role" data-r="'+r+'" aria-label="'+rn(r,S.g)+'"></button></div>'});
+  h+='<div class="opt"><div class="txt"><b>'+t('timer')+'</b><span>'+t('timerD')+'</span></div><div class="seg">'+[0,120,180,300].map(s=>'<button data-act="timer" data-s="'+s+'" class="'+(c.timer===s?'on':'')+'">'+(s?num(s/60):t('off'))+'</button>').join('')+'</div></div>'+
+    '<div class="foot"><button class="btn" data-act="close-sheet">'+t('done')+'</button></div>';
+  const old=app.querySelector('.sheet-wrap .sheet'),st=old?old.scrollTop:0;
+  let w=app.querySelector('.sheet-wrap');
+  if(!w){w=document.createElement('div');w.className='sheet-wrap';w.addEventListener('click',e=>{if(e.target===w)closeSheet()});app.appendChild(w)}
+  w.innerHTML='<div class="sheet"><div class="grab"></div>'+h+'</div>';
+  const s=w.querySelector('.sheet');if(old){s.style.animation='none';s.scrollTop=st}else{}
+}
 function closeSheet(){const s=app.querySelector('.sheet-wrap');if(s)s.remove()}
 function leaveSheet(){
   closeSheet();const w=document.createElement('div');w.className='sheet-wrap';
@@ -268,6 +291,11 @@ const A={
   lang(){S.lang=S.lang==='ar'?'en':'ar';store.set('lang',S.lang);setLang();render()},
   ctl(){send({t:'ctl'})},
   home(){goHome()},
+  cfg(){cfgSheet()},
+  role(el){const c=getCfg();c.roles[el.dataset.r]=!c.roles[el.dataset.r];setCfg(c)},
+  'sab-'(){const c=getCfg(),k=comp(c);c.sabs=Math.max(1,k.sabs-1);setCfg(c)},
+  'sab+'(){const c=getCfg(),k=comp(c);c.sabs=Math.min(k.maxS,k.sabs+1);setCfg(c)},
+  timer(el){const c=getCfg();c.timer=+el.dataset.s;setCfg(c)},
   host(){if(!readName())return;startHost(newCode())},
   menu(){leaveSheet()},
   'close-sheet'(){closeSheet()},

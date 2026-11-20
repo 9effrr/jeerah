@@ -355,3 +355,7 @@ button.row:active{background:var(--tint)}
 .home .credit{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:18px;padding:0 24px;font-size:12px;font-weight:300;letter-spacing:.01em;color:var(--muted)}
 .home .credit b{font-weight:500;color:var(--ink2)}
 .home .credit img{height:16px;width:auto;opacity:.85}
+
+.opt.off .txt,.opt.off .face{opacity:.5}
+.opt .txt span.warn{color:var(--accent)}
+.sheet>.small{margin:-4px 0 6px}

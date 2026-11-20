@@ -187,7 +187,7 @@ function compose(n){
   const auto=n<=6?1:n<=9?2:n<=13?3:4;
   const maxS=Math.max(1,Math.ceil(n/2)-1);
   const sabs=Math.min(maxS,Math.max(1,S.cfg.sabs||auto));
-  let sp=SPECIALS.filter(r=>S.cfg.roles[r]&&n>=ROLES[r].min);
+  let sp=SPECIALS.filter(r=>S.cfg.roles[r]);
   while(sabs+sp.length>n)sp.pop();
   return {sabs,sp,res:n-sabs-sp.length,maxS,auto};
 }
@@ -227,13 +227,13 @@ function setup(){
 }
 function rolesSheet(){
   const n=Math.max(S.names.length,MIN),c=compose(n);
-  let h='<h2>'+t('sheetRoles')+'</h2>';
+  let h='<h2>'+t('sheetRoles')+'</h2><p class="small">'+t('pickRoles')+'</p>';
   h+='<div class="opt">'+face('saboteur')+'<div class="txt"><b>'+t('sabCount')+'</b><span>'+t('sabAuto')+'</span></div>'+
      '<div class="stepper"><button data-act="sab-" '+(c.sabs<=1?'disabled':'')+'>−</button><span>'+num(c.sabs)+'</span><button data-act="sab+" '+(c.sabs>=c.maxS?'disabled':'')+'>+</button></div></div>';
   SPECIALS.forEach(r=>{
-    const na=n<ROLES[r].min;
-    h+='<div class="opt '+(na?'na':'')+'">'+face(r)+'<div class="txt"><b>'+rn(r)+'</b><span>'+(na?t('needs',{n:num(ROLES[r].min)}):t('d_'+r))+'</span></div>'+
-       '<button class="switch '+(S.cfg.roles[r]&&!na?'on':'')+'" data-act="role" data-r="'+r+'" '+(na?'disabled':'')+' aria-label="'+rn(r)+'"></button></div>';
+    const on=!!S.cfg.roles[r],na=on&&c.sp.indexOf(r)<0;
+    h+='<div class="opt'+(on?'':' off')+'">'+face(r)+'<div class="txt"><b>'+rn(r)+'</b><span'+(na?' class="warn"':'')+'>'+(na?t('noRoom'):t('d_'+r))+'</span></div>'+
+       '<button class="switch '+(on?'on':'')+'" data-act="role" data-r="'+r+'" aria-label="'+rn(r)+'"></button></div>';
   });
   h+='<div class="opt"><div class="txt"><b>'+t('timer')+'</b><span>'+t('timerD')+'</span></div><div class="seg">'+
      [0,120,180,300].map(s=>'<button data-act="timer" data-s="'+s+'" class="'+(S.cfg.timer===s?'on':'')+'">'+(s?num(s/60):t('off'))+'</button>').join('')+'</div></div>';
