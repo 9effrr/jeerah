@@ -82,7 +82,7 @@ h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.25}
 
 /* home */
 .home{padding:0 0 calc(var(--sab) + 20px)}
-.home .cover{position:relative;flex:none;width:100%;height:clamp(240px,calc(100dvh - 404px),126vw);max-height:580px;overflow:hidden}
+.home .cover{position:relative;flex:none;width:100%;height:clamp(220px,calc(100dvh - 436px),126vw);max-height:580px;overflow:hidden}
 .home .cover img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;-webkit-mask-image:linear-gradient(#000 62%,transparent 99%);mask-image:linear-gradient(#000 62%,transparent 99%);animation:fade .9s var(--ease) both}
 .home .bar{position:absolute;inset:calc(var(--sat) + 8px) 12px auto 12px;display:flex;justify-content:space-between;z-index:2}
 .home .bar .icon-btn,.home .bar .text-btn{color:#EFE9DC;background:rgba(22,30,45,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -359,3 +359,22 @@ button.row:active{background:var(--tint)}
 .opt.off .txt,.opt.off .face{opacity:.5}
 .opt .txt span.warn{color:var(--accent)}
 .sheet>.small{margin:-4px 0 6px}
+
+/* ---------- sponsor banner ---------- */
+.adb{flex:none;display:flex;align-items:center;gap:10px;margin:18px 24px 0;padding:10px 12px 10px 10px;min-height:112px;border-radius:22px;
+  background:linear-gradient(115deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%);color:#0F1F18;text-decoration:none;
+  box-shadow:0 10px 28px rgba(0,0,0,.28);position:relative;overflow:hidden;animation:rise .7s var(--ease) .15s both}
+[dir="ltr"] .adb{background:linear-gradient(245deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%)}
+.adb:active{transform:scale(.985)}
+.adtxt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.adb .mohup{height:25px;width:auto;max-width:100%;margin-bottom:5px}
+.adh{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.15;color:#0B1712}
+.adsave{font-size:12px;font-weight:600;line-height:1.35;white-space:nowrap}
+.adsave b{font-family:var(--display);font-weight:400;font-size:21px;line-height:1;vertical-align:-2px;margin-inline-start:2px}
+.adtw{font-size:11px;font-weight:500;line-height:1.35;opacity:.86}
+.adb .sakna{height:56px;width:auto;flex:none;align-self:flex-end;margin-bottom:2px;filter:drop-shadow(0 1px 0 rgba(0,70,30,.35))}
+.adqr{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+.qrbox{width:76px;height:76px;padding:6px;border-radius:12px;background:#F3F7DA;box-shadow:inset 0 0 0 2px #E3F01E}
+.qrbox img{display:block;width:100%;height:100%}
+.adqr .reg{font-size:10.5px;font-weight:700;color:#0B1712;white-space:nowrap}
+@media (max-width:370px){.adb .sakna{display:none}}

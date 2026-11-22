@@ -136,6 +136,15 @@ function quitSheet(){
 }
 
 /* ---------- home + guide ---------- */
+const AD_URL='https://firsthome.mohup.gov.om/go/priar2732';
+function adBanner(){
+  return '<a class="adb" href="'+AD_URL+'" target="_blank" rel="noopener" aria-label="'+t('ad_aria')+'" data-act="ad">'+
+    '<span class="adtxt"><img class="mohup" src="assets/ad/mohup.png" alt="" width="983" height="232">'+
+      '<b class="adh">'+t('ad_h')+'</b>'+
+      '<span class="adsave">'+t('ad_save')+' <b dir="ltr">40%</b></span><span class="adtw">'+t('ad_twice')+'</span></span>'+
+    '<img class="sakna" src="assets/ad/sakna.png" alt="" width="715" height="645">'+
+    '<span class="adqr"><span class="qrbox"><img src="assets/ad/qr.svg" alt=""></span><span class="reg">'+t('ad_reg')+'</span></span></a>';
+}
 function home(){
   S.game=null;music(false);stopVo();
   show('night',
@@ -144,7 +153,7 @@ function home(){
       '<button class="text-btn" data-act="lang">'+(S.lang==='ar'?'EN':'ع')+'</button></div>'+
       '<img src="assets/scene/cover.webp" alt="" width="1400" height="1400"></div>'+
     '<div class="hero"><div class="logo" role="img" aria-label="جيرة Jeerah"></div>'+
-      '<p class="tag">'+t('tag')+'</p><p class="meta">'+t('meta')+'</p></div>'+
+      '<p class="tag">'+t('tag')+'</p><p class="meta">'+t('meta')+'</p></div>'+adBanner()+
     '<div class="foot"><button class="btn" data-act="enter">'+t('enterB')+'</button>'+
       '<div class="links"><button class="btn ghost" data-act="howto">'+t('howto')+'</button><button class="btn ghost" data-act="cast">'+t('cast')+'</button></div></div>'+
     '<p class="credit">'+(window.HAAY_LOGO?'<img src="assets/haay.png" alt="">':'')+'<span>'+t('credit')+'</span></p>',
@@ -535,6 +544,7 @@ function end(){
 const A={
   'home':()=>{closeSheet();view(home)},
   'enter':()=>view(enterV),
+  'ad':(el,e)=>{},
   'go':el=>{location.href=el.dataset.href},
   'howto':()=>view(howto),
   'cast':()=>view(cast),
