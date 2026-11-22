@@ -362,19 +362,20 @@ button.row:active{background:var(--tint)}
 
 /* ---------- sponsor banner ---------- */
 .adb{flex:none;display:flex;align-items:center;gap:10px;margin:18px 24px 0;padding:10px 12px 10px 10px;min-height:112px;border-radius:22px;
-  background:linear-gradient(115deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%);color:#0F1F18;text-decoration:none;
+  background:linear-gradient(245deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%);color:#0F1F18;text-decoration:none;
   box-shadow:0 10px 28px rgba(0,0,0,.28);position:relative;overflow:hidden;animation:rise .7s var(--ease) .15s both}
-[dir="ltr"] .adb{background:linear-gradient(245deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%)}
+[dir="ltr"] .adb{background:linear-gradient(115deg,#03B36B 0%,#22C063 38%,#9BDD34 78%,#E3F01E 100%)}
 .adb:active{transform:scale(.985)}
 .adtxt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-.adb .mohup{height:25px;width:auto;max-width:100%;margin-bottom:5px}
-.adh{font-family:var(--display);font-weight:400;font-size:20px;line-height:1.15;color:#0B1712}
+.adb .mohup{height:19px;width:auto;max-width:100%;margin-bottom:6px;opacity:.6}
+.adh{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.15;color:#0B1712;white-space:nowrap}
 .adsave{font-size:12px;font-weight:600;line-height:1.35;white-space:nowrap}
 .adsave b{font-family:var(--display);font-weight:400;font-size:21px;line-height:1;vertical-align:-2px;margin-inline-start:2px}
 .adtw{font-size:11px;font-weight:500;line-height:1.35;opacity:.86}
-.adb .sakna{height:56px;width:auto;flex:none;align-self:flex-end;margin-bottom:2px;filter:drop-shadow(0 1px 0 rgba(0,70,30,.35))}
+.adb .sakna{height:54px;width:auto;flex:none;align-self:center;filter:drop-shadow(0 1px 0 rgba(0,70,30,.35))}
 .adqr{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
-.qrbox{width:76px;height:76px;padding:6px;border-radius:12px;background:#F3F7DA;box-shadow:inset 0 0 0 2px #E3F01E}
+.qrbox{width:74px;height:74px;padding:6px;border-radius:12px;background:#F3F7DA;box-shadow:inset 0 0 0 2px #E3F01E}
 .qrbox img{display:block;width:100%;height:100%}
 .adqr .reg{font-size:10.5px;font-weight:700;color:#0B1712;white-space:nowrap}
 @media (max-width:370px){.adb .sakna{display:none}}
+[dir="ltr"] .adh{white-space:normal}

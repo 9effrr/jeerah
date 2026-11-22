@@ -139,10 +139,10 @@ function quitSheet(){
 const AD_URL='https://firsthome.mohup.gov.om/go/priar2732';
 function adBanner(){
   return '<a class="adb" href="'+AD_URL+'" target="_blank" rel="noopener" aria-label="'+t('ad_aria')+'" data-act="ad">'+
+    '<img class="sakna" src="assets/ad/sakna.png" alt="" width="715" height="645">'+
     '<span class="adtxt"><img class="mohup" src="assets/ad/mohup.png" alt="" width="983" height="232">'+
       '<b class="adh">'+t('ad_h')+'</b>'+
       '<span class="adsave">'+t('ad_save')+' <b dir="ltr">40%</b></span><span class="adtw">'+t('ad_twice')+'</span></span>'+
-    '<img class="sakna" src="assets/ad/sakna.png" alt="" width="715" height="645">'+
     '<span class="adqr"><span class="qrbox"><img src="assets/ad/qr.svg" alt=""></span><span class="reg">'+t('ad_reg')+'</span></span></a>';
 }
 function home(){
