@@ -18,7 +18,7 @@ const h = await phone(0, BASE + 'join.html');
 await h.fill('#nm', names[0]); await h.click('[data-act=host]');
 let code = null;
 for (let s = 0; s < 40 && !code; s++) { await h.waitForTimeout(500); code = await h.evaluate(() => window.__join && window.__join.S.status === 'in' ? window.__join.S.code : null); }
-log('host status', await h.evaluate(() => window.__join.S.status), 'err', await h.evaluate(() => window.__join.S.err), 'code', code);
+log('host via', await h.evaluate(() => window.Net.via), 'host status', await h.evaluate(() => window.__join.S.status), 'err', await h.evaluate(() => window.__join.S.err), 'code', code);
 if (!code) { ok = false; await h.screenshot({ path: 'A-host.png' }); }
 else {
   const js = [];
@@ -28,7 +28,7 @@ else {
   }
   for (let s = 0; s < 40; s++) { await h.waitForTimeout(500); const n = await h.evaluate(() => (window.__join.S.state && window.__join.S.state.players || []).length); if (n >= 5) break; }
   const n = await h.evaluate(() => (window.__join.S.state && window.__join.S.state.players || []).length);
-  for (const [i, p] of js.entries()) log('joiner', i + 1, await p.evaluate(() => window.__join.S.status), await p.evaluate(() => window.__join.S.err));
+  for (const [i, p] of js.entries()) log('joiner', i + 1, await p.evaluate(() => window.__join.S.status), await p.evaluate(() => window.__join.S.err), await p.evaluate(() => window.Net.via));
   log('A players in lobby:', n); if (n < 5) ok = false;
   await h.screenshot({ path: 'A-host.png' }); await js[0].screenshot({ path: 'A-joiner.png' });
 }
