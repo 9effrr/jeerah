@@ -24,7 +24,10 @@ const S={
 
 const app=document.getElementById('app'), screen=document.getElementById('screen');
 
-function t(k,v){let s=(T[S.lang][k]!=null?T[S.lang][k]:T.ar[k])||k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
+const PK=new Set(['hold','holdSub','seeFirst','team_solo','fixQ','smartQ','legalQ','legalKillD','legalSaveD','legalNoneD','legalSaveQ','decoyQ','p_joinTitle','p_started','p_nameTaken','p_youHost','p_closeEyes','p_outLead','p_youWon','p_youLost','p_peek','p_leaveAsk','h_new','h_orJoin','h_joinB','h_full']);
+function t(k,v){if(S.cg==='f'&&PK.has(k)&&T[S.lang][k+'_f']!=null)k=k+'_f';let s=(T[S.lang][k]!=null?T[S.lang][k]:T.ar[k])||k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
+function cnt(k,n){const f=t(k).split('|');if(f.length===1)return f[0].split('{n}').join(num(n));
+  let s;if(f.length===2)s=n===1?f[0]:f[1];else s=n===1?f[0]:n===2?f[1]:(n%100>=3&&n%100<=10)?f[2]:f[3];return s.split('{n}').join(num(n))}
 function num(n){return S.lang==='ar'?Number(n).toLocaleString('ar-EG',{useGrouping:false}):String(n)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tg(k,g,v){return t(g==='f'&&T[S.lang][k+'_f']!=null?k+'_f':k,v)}
@@ -93,7 +96,7 @@ function show(theme,html,cls,keep){
   void screen.offsetWidth;
   screen.classList.add('enter');
 }
-function view(fn){S.cur=fn;fn();Back.sync()}
+function view(fn){S.cur=fn;S.cg=null;fn();Back.sync()}
 function floor(){
   const g=S.game;if(!g)return '';
   let txt,ic;
@@ -173,7 +176,8 @@ function backBar(title){
 }
 function howto(){
   const st=(ic,a,b)=>'<div class="step"><span class="ic">'+ic+'</span><div><b>'+t(a)+'</b><p>'+t(b)+'</p></div></div>';
-  show('day',backBar()+'<h1>'+t('howTitle')+'</h1><p class="lead mt8">'+t('howLead')+'</p>'+
+  show('day',backBar()+'<div class="story"><h1>'+t('storyT')+'</h1><p>'+t('story1')+'</p><p>'+t('story2')+'</p><p>'+t('story3')+'</p></div>'+
+    '<h2 class="mt32">'+t('howSub')+'</h2><p class="lead mt8">'+t('howLead')+'</p>'+
     '<div class="steps">'+st(I.moon,'s1','s1d')+st(I.sun,'s2','s2d')+st(I.users,'s3','s3d')+st(I.flag,'s4','s4d')+'</div>'+
     '<div class="foot"><button class="btn" data-act="to-setup">'+t('start')+'</button></div>');
 }
@@ -202,8 +206,8 @@ function compose(n){
 }
 function castLine(){
   const n=Math.max(S.names.length,MIN),c=compose(n);
-  const parts=[t('nSab',{n:num(c.sabs)})].concat(c.sp.map(rn));
-  if(c.res>0)parts.push(t('nRes',{n:num(c.res)}).replace(S.lang==='en'&&c.res===1?/s$/:/$^/,''));
+  const parts=[cnt('nSab',c.sabs)].concat(c.sp.map(r=>rn(r)));
+  if(c.res>0)parts.push(cnt('nRes',c.res));
   if(S.lang==='en'&&c.sabs===1)parts[0]=parts[0].replace(/s$/,'');
   const faces=['saboteur'].concat(c.sp).concat(c.res>0?['resident']:[]).slice(0,5);
   return '<button class="cast" data-act="roles"><span class="faces">'+faces.map(face).join('')+'</span>'+
@@ -299,6 +303,7 @@ function dealTurn(i){
   doors(p,'hintDeal',()=>view(()=>reveal(p,i)));
 }
 function reveal(p,i){
+  S.cg=p.g;
   const g=S.game,team=ROLES[p.role].team;
   const mates=g.players.filter(x=>x.role==='saboteur'&&x.id!==p.id).map(x=>esc(x.name));
   const extra=p.role==='saboteur'&&mates.length?'<br><b style="color:var(--bad);font-weight:600">'+t('yourTeam',{names:mates.join('، ')})+'</b>':'';
@@ -353,6 +358,7 @@ function opts(filter,notes){
   return alive().filter(filter).map(p=>({id:p.id,name:p.name,apt:p.apt,off:notes&&notes(p)==='off',note:notes&&notes(p)!=='off'?notes(p):''}));
 }
 function nightAct(p,i){
+  S.cg=p.g;
   const g=S.game,n=g.night,next=()=>nightTurn(i+1);
   if(p.role==='saboteur'){
     const last=n.sabVotes.length?P(n.sabVotes[n.sabVotes.length-1]):null;
@@ -382,6 +388,7 @@ function smartResult(target,next){
   snd(sab?'dum':'chimes',0.4);
 }
 function legalMenu(p,next){
+  S.cg=p.g;
   const g=S.game;S.legalCtx={p,next};
   const m=(act,a,b,used)=>'<button class="mode '+(used?'used':'')+'" data-act="'+act+'"><span class="txt"><b>'+t(a)+(used?' · '+t('used'):'')+'</b><span>'+t(b)+'</span></span><span class="chev">'+I.chev+'</span></button>';
   show('night',topbar()+me(p)+'<h2 class="pick-title">'+t('legalQ')+'</h2>'+
@@ -458,6 +465,7 @@ function voteTurn(i){
   if(i>=order.length)return doorsRaw({kicker:t('voteDoneK'),who:t('voteDone'),hint:t('voteDoneH'),btn:t('voteDoneB')},()=>view(tally));
   const p=P(order[i]);
   doors(p,'hintVote',()=>view(()=>{
+    S.cg=p.g;
     picker({theme:'day',head:'<p class="kicker" style="margin-bottom:8px">'+esc(p.name)+' · '+t('hintVote')+'</p>',
       title:t('voteQ'),options:opts(x=>x.id!==p.id&&x.id!==g.immune),skip:t('abstain'),
       onSkip:()=>voteTurn(i+1),onConfirm:id=>{g.votes[id]=(g.votes[id]||0)+1;voteTurn(i+1)}});
@@ -501,6 +509,7 @@ function outScreen(p,act,label,kicker){
 function solidStep(){
   const g=S.game,p=P(g.verdict);
   doors(p,'hintVote',()=>view(()=>{
+    S.cg=p.g;
     picker({theme:'day',head:me(p),title:t('solidQ'),sub:t('solidKick'),options:opts(()=>true),
       onConfirm:id=>{
         const v=P(id);v.alive=false;
