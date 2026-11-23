@@ -8,7 +8,9 @@
 'use strict';
 const PREFIX='jeerah-v1-';
 const TOPIC='jeerah/v2/';
-const BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt','wss://test.mosquitto.org:8081/mqtt'];
+const ALL_BROKERS=['wss://broker.emqx.io:8084/mqtt','wss://broker.hivemq.com:8884/mqtt','wss://test.mosquitto.org:8081/mqtt'];
+const BR=(location.search.match(/[?&]br=(\d)/)||[])[1];
+const BROKERS=BR!=null?[ALL_BROKERS[+BR]]:ALL_BROKERS;
 const isLocal=()=>/[?&]local=1/.test(location.search);
 const rid=()=>Math.random().toString(36).slice(2,10);
 
