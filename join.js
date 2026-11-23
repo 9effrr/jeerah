@@ -41,6 +41,9 @@ const I={
 };
 
 function show(theme,html,key){
+  /* the host re-sends state often; leave the screen alone when nothing on it changed */
+  if(key===S.lastKey&&html===S.lastHtml&&app.dataset.theme===theme)return false;
+  S.lastHtml=html;
   app.dataset.theme=theme;
   const anim=key!==S.lastKey;S.lastKey=key;
   screen.className='screen';screen.innerHTML=html;
@@ -63,6 +66,7 @@ function ctl(st){return st.ctl?'<div class="hostctl"><span class="small">'+t('p_
 
 /* ---------- screens ---------- */
 function formV(){
+  S.lastHtml=null;
   const busy=S.status==='joining'||S.status==='opening';
   show('night',
     '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span><span></span><span class="side end"><button class="text-btn" data-act="lang">'+(S.lang==='ar'?'EN':'ع')+'</button></span></header>'+
@@ -170,11 +174,11 @@ function rolesV(st){
   if(st.ready&&st.solo)return pubV(st);
   if(st.ready){return show('night',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1><p class="lead">'+t('p_waitOthers')+'</p></div>'+ctl(st),'rready')}
   const extra=me.role==='saboteur'&&st.mates.length?'<br><b style="color:var(--bad);font-weight:600">'+t('yourTeam',{names:st.mates.map(esc).join('، ')})+'</b>':'';
-  show('night',top(st)+
+  if(show('night',top(st)+
     '<div class="stage" id="stage"><div class="q"><span class="mark">'+I.touch+'</span><div class="stack center g4"><b style="font-size:18px;font-weight:600">'+t('hold')+'</b><span class="small">'+t('holdSub')+'</span></div></div>'+
       '<div class="secret"><div class="who"><span class="team '+team+'">'+t('team_'+team)+'</span><h1>'+rn(me.role,me.g)+'</h1></div><img class="art" src="'+art(me.role,me.g,'bust')+'" alt=""></div></div>'+
     '<p class="role-desc" id="rdesc"><span class="small">'+esc(me.name)+'</span></p>'+
-    '<div class="foot"><button class="btn" id="nextb" data-act="ready" disabled>'+t('seeFirst')+'</button></div>','roles');
+    '<div class="foot"><button class="btn" id="nextb" data-act="ready" disabled>'+t('seeFirst')+'</button></div>','roles')===false)return;
   const stage=document.getElementById('stage'),d=document.getElementById('rdesc'),nb=document.getElementById('nextb');
   const idle=d.innerHTML,full=tg('d_'+me.role,me.g)+extra;
   stage.addEventListener('pointerdown',e=>{e.preventDefault();stage.classList.add('show');d.innerHTML=full;vib(15);if(nb.disabled){nb.disabled=false;nb.textContent=t('next')}});
