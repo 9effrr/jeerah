@@ -175,16 +175,29 @@ function backBar(title){
     (title||'<span></span>')+'<span class="side end"></span></header>';
 }
 function howto(){
-  const st=(ic,a,b)=>'<div class="step"><span class="ic">'+ic+'</span><div><b>'+t(a)+'</b><p>'+t(b)+'</p></div></div>';
-  show('day',backBar()+'<div class="story"><h1>'+t('storyT')+'</h1><p>'+t('story1')+'</p><p>'+t('story2')+'</p><p>'+t('story3')+'</p></div>'+
-    '<h2 class="mt32">'+t('howSub')+'</h2><p class="lead mt8">'+t('howLead')+'</p>'+
-    '<div class="steps">'+st(I.moon,'s1','s1d')+st(I.sun,'s2','s2d')+st(I.users,'s3','s3d')+st(I.flag,'s4','s4d')+'</div>'+
-    '<div class="foot"><button class="btn" data-act="to-setup">'+t('start')+'</button></div>');
+  const g=S.castG||'m',b=(r,gg)=>art(r,gg||g,'bust');
+  const faces=ROLE_ORDER.map((r,i)=>'<img src="'+art(r,i%2?'f':'m','face')+'" alt="">').join('');
+  show('day',backBar()+
+    '<div class="bento">'+
+      '<section class="tile story-t"><div class="pic"><img src="assets/scene/cover.webp" alt=""></div>'+
+        '<div class="in"><h1>'+t('storyT')+'</h1><p>'+t('story1')+'</p><p class="em">'+t('story2')+'</p><p>'+t('story3')+'</p></div></section>'+
+      '<section class="tile stat"><b>'+t('statN')+'</b><span>'+t('statNd')+'</span></section>'+
+      '<section class="tile stat alt"><b>'+t('statM')+'</b><span>'+t('statMd')+'</span></section>'+
+      '<h2 class="bhead">'+t('howSub')+'</h2>'+
+      '<section class="tile night"><span class="moon"></span><i class="st s1"></i><i class="st s2"></i><i class="st s3"></i>'+
+        '<div class="txt"><b>'+t('s1')+'</b><p>'+t('t1d')+'</p></div><img class="who" src="'+b('saboteur','m')+'" alt=""></section>'+
+      '<section class="tile morning"><span class="sun"></span>'+
+        '<div class="txt"><b>'+t('s2')+'</b><p>'+t('t2d')+'</p></div><img class="who" src="'+b('smart','m')+'" alt=""></section>'+
+      '<section class="tile council"><div class="txt"><b>'+t('s3')+'</b><p>'+t('t3d')+'</p></div><div class="faces">'+faces+'</div></section>'+
+      '<section class="tile win good"><div class="txt"><b>'+t('wg')+'</b><p>'+t('wgD')+'</p></div><img class="who" src="'+b('resident','m')+'" alt=""></section>'+
+      '<section class="tile win sab"><div class="txt"><b>'+t('ws')+'</b><p>'+t('wsD')+'</p></div><img class="who" src="'+b('saboteur','f')+'" alt=""></section>'+
+    '</div>'+
+    '<div class="foot"><button class="btn" data-act="enter">'+t('start')+'</button></div>');
 }
 function cast(){
   const g=S.castG;
   const cards=ROLE_ORDER.map(r=>'<section class="card"><div class="art"><img src="'+art(r,g,'full')+'" alt="'+rn(r,g)+'"></div>'+
-    '<h1>'+rn(r,g)+'</h1><span class="team '+ROLES[r].team+'">'+t('team_'+ROLES[r].team)+'</span><p>'+tg('d_'+r,g)+'</p></section>').join('');
+    '<h1>'+rn(r,g)+'</h1><p>'+tg('d_'+r,g)+'</p></section>').join('');
   show('day',backBar('<span class="seg"><button data-act="cast-g" data-g="m" class="'+(g==='m'?'on':'')+'">'+t('men')+'</button><button data-act="cast-g" data-g="f" class="'+(g==='f'?'on':'')+'">'+t('women')+'</button></span>')+
     '<div class="gallery" id="gal">'+cards+'</div>'+
     '<div class="dots" id="dots">'+ROLE_ORDER.map((_,i)=>'<i class="'+(i?'':'on')+'"></i>').join('')+'</div>');
