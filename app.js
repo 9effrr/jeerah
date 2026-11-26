@@ -163,12 +163,15 @@ function home(){
     'home');
 }
 function enterV(){
-  const ic={one:'<svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/></svg>',
-    each:'<svg viewBox="0 0 24 24"><rect x="3" y="6" width="7.5" height="13" rx="2"/><rect x="13.5" y="6" width="7.5" height="13" rx="2"/><path d="M6 16h1.5M16.5 16H18"/></svg>',
-    tv:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>'};
-  const m=(act,href,k,a,b)=>'<button class="mode" data-act="'+act+'"'+(href?' data-href="'+href+'"':'')+'><span class="mic">'+ic[k]+'</span><span class="txt"><b>'+t(a)+'</b><span>'+t(b)+'</span></span><span class="chev">'+I.chev+'</span></button>';
-  show('night',backBar()+'<h1 class="mt16">'+t('p_modeTitle')+'</h1>'+
-    '<div class="modes cardsm">'+m('to-setup','','one','m_one','m_oneD')+m('go','join.html','each','m_each','m_eachD')+m('go','tv.html','tv','m_tv','m_tvD')+'</div>');
+  const b=(r,g)=>'<img src="'+art(r,g,'bust')+'" alt="">';
+  const tile=(cls,act,href,k,art)=>'<button class="mtile '+cls+'" data-act="'+act+'"'+(href?' data-href="'+href+'"':'')+'>'+
+    '<span class="mtx"><b>'+t(k)+'</b><span>'+t(k+'D')+'</span></span><span class="mart">'+art+'</span></button>';
+  show('night',backBar()+'<h1 class="mt8">'+t('p_modeTitle')+'</h1>'+
+    '<div class="mtiles">'+
+      tile('one','to-setup','','m_one',b('smart','m'))+
+      tile('each','go','join.html','m_each','<span class="duo">'+b('resident','m')+b('smart','f')+'</span>')+
+      tile('tv','go','tv.html','m_tv','<span class="tvset"><img src="assets/scene/cover.webp" alt=""></span>')+
+    '</div>');
 }
 function backBar(title){
   return '<header class="top"><span class="side"><button class="icon-btn" data-act="home" aria-label="'+t('back')+'">'+(S.lang==='ar'?I.chev:I.back)+'</button></span>'+
