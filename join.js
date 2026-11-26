@@ -22,7 +22,7 @@ function t(k,v){if(S.g==='f'&&PK.has(k)&&T[S.lang][k+'_f']!=null)k=k+'_f';let s=
 function tg(k,g,v){return t(g==='f'&&T[S.lang][k+'_f']!=null?k+'_f':k,v)}
 function rn(r,g){return tg('r_'+r,g)}
 function art(r,g,kind){return 'assets/ch/'+r+(g==='f'?'-f':'')+'-'+kind+'.webp'}
-function num(n){return S.lang==='ar'?Number(n).toLocaleString('ar-EG',{useGrouping:false}):String(n)}
+function num(n){return String(n)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function setLang(){document.documentElement.lang=S.lang;document.documentElement.dir=S.lang==='ar'?'rtl':'ltr'}
 function vib(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
@@ -173,7 +173,8 @@ function rolesV(st){
   const me=st.me,team=ROLES[me.role].team;
   if(st.ready&&st.solo)return pubV(st);
   if(st.ready){return show('night',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1><p class="lead">'+t('p_waitOthers')+'</p></div>'+ctl(st),'rready')}
-  const extra=me.role==='saboteur'&&st.mates.length?'<br><b style="color:var(--bad);font-weight:600">'+t('yourTeam',{names:st.mates.map(esc).join('، ')})+'</b>':'';
+  const ml=(st.mates||[]).map(m=>typeof m==='string'?{name:m,g:'m'}:m);
+  const extra=me.role==='saboteur'&&ml.length?'<span class="mates"><span class="mk">'+t('sabMates')+'</span><span class="mt">'+ml.map(x=>'<span class="mtile"><span class="av '+x.g+'">'+esc(x.name.slice(0,1))+'</span>'+esc(x.name)+'</span>').join('')+'</span></span>':'';
   if(show('night',top(st)+
     '<div class="stage" id="stage"><div class="q"><span class="mark">'+I.touch+'</span><div class="stack center g4"><b style="font-size:18px;font-weight:600">'+t('hold')+'</b><span class="small">'+t('holdSub')+'</span></div></div>'+
       '<div class="secret"><div class="who"><span class="team '+team+'">'+t('team_'+team)+'</span><h1>'+rn(me.role,me.g)+'</h1></div><img class="art" src="'+art(me.role,me.g,'bust')+'" alt=""></div></div>'+
@@ -188,7 +189,7 @@ function rolesV(st){
 function bigIcon(svg){return '<span class="bigic">'+svg+'</span>'}
 function me_(st){const me=st.me;return '<div class="me"><span class="face"><img src="'+art(me.role,me.g,'face')+'" alt=""></span><div class="txt"><span class="small">'+esc(me.name)+'</span><b>'+t('youAre',{role:rn(me.role,me.g)})+'</b></div></div>'}
 function rowsOf(options,selected){
-  return '<div class="list mt16">'+options.map(o=>'<button class="row'+(o.off?' off':'')+(selected===o.pid?' sel':'')+'" data-act="pick" data-id="'+o.pid+'"><span class="apt">'+num(o.apt)+'</span><span class="name">'+esc(o.name)+'</span>'+(o.off?'<span class="note">'+t('fixNote')+'</span>':'')+'<span class="tick">'+I.check+'</span></button>').join('')+'</div>';
+  return '<div class="list mt16">'+options.map(o=>'<button class="row'+(o.off?' off':'')+(selected===o.pid?' sel':'')+'" data-act="pick" data-id="'+o.pid+'"><span class="name">'+esc(o.name)+'</span>'+(o.sab?'<span class="sabtag">'+t('sabTag')+'</span>':o.off?'<span class="note">'+t('fixNote')+'</span>':'')+'<span class="tick">'+I.check+'</span></button>').join('')+'</div>';
 }
 function taskV(st){
   const k=st.kind,me=st.me;

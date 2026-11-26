@@ -12,7 +12,7 @@ function t(k,v){let s=(T[UI.lang][k]!=null?T[UI.lang][k]:T.ar[k]);if(s==null)s=k
 function tg(k,g,v){return t(g==='f'&&T[UI.lang][k+'_f']!=null?k+'_f':k,v)}
 function rn(r,g){return tg('r_'+r,g)}
 function art(r,g,kind){return 'assets/ch/'+r+(g==='f'?'-f':'')+'-'+kind+'.webp'}
-function num(n){return UI.lang==='ar'?Number(n).toLocaleString('ar-EG',{useGrouping:false}):String(n)}
+function num(n){return String(n)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
@@ -137,13 +137,13 @@ function viewFor(p){
   const ph=G.phase;
   if(EMB){v.solo=true;v.pub=pubFor()}
   if(ph==='lobby'){v.players=G.players.map(x=>({name:x.name,g:x.g,host:x.pid===G.hostPid,on:x.online!==false,me:x.pid===p.pid}));v.min=MIN;v.max=MAX;if(EMB)v.url=joinURL();return v}
-  if(ph==='roles'){v.mates=p.role==='saboteur'?G.players.filter(x=>x.role==='saboteur'&&x.pid!==p.pid).map(x=>x.name):[];v.ready=!!p.ready;return v}
+  if(ph==='roles'){v.mates=p.role==='saboteur'?G.players.filter(x=>x.role==='saboteur'&&x.pid!==p.pid).map(x=>({name:x.name,g:x.g})):[];v.ready=!!p.ready;return v}
   if(ph==='night'){
     const n=G.night;
     if(!p.alive){v.view='out';return v}
     if(n.acted[p.pid]){v.view='wait';if(n.smart[p.pid])v.smart=n.smart[p.pid];v.left=alive().filter(x=>!n.acted[x.pid]).length;return v}
     v.view='task';
-    if(p.role==='saboteur'){v.kind='sab';v.options=opts(x=>x.role!=='saboteur');
+    if(p.role==='saboteur'){v.kind='sab';v.options=opts(x=>x.pid!==p.pid).map(o=>{const q=G.players.find(y=>y.pid===o.pid);if(q&&q.role==='saboteur'){o.off=true;o.sab=true}return o});
       v.partner=Object.keys(n.sab).filter(k=>k!==p.pid).map(k=>({name:P(k).name,target:P(n.sab[k]).name}));}
     else if(p.role==='fixer'){v.kind='fix';v.options=alive().map(x=>({pid:x.pid,name:x.name,apt:x.apt,off:x.pid===G.lastProtect}))}
     else if(p.role==='smart'){v.kind='smart';v.options=opts(x=>x.pid!==p.pid)}
