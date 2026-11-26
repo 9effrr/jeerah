@@ -6,9 +6,9 @@
 :root{
   --u:min(1vh,.5625vw);
   --ease:cubic-bezier(.22,1,.36,1);
-  --bg:#2A0710;--raised:#45121D;--raised2:#5A1B28;--line:rgba(243,230,207,.08);
-  --ink:#F5EADB;--ink2:#DCC6B9;--muted:#AE8D87;
-  --orange:#ED6345;--cerise:#E0C97B;--cream:#F1E6CF;--indigo:#62202D;
+  --bg:#181210;--raised:#261D1A;--raised2:#33271F;--line:rgba(243,230,207,.08);
+  --ink:#F3EADC;--ink2:#CBBBA8;--muted:#9C8C7E;
+  --orange:#ED6345;--cerise:#E0C97B;--cream:#F1E6CF;--indigo:#4B0F1B;
   --good:#A9C46F;--bad:#F27A5C;--solo:#D99AC4;--m:#A9C1EC;--f:#F2A0B8;
   --display:"Lalezar","Alexandria",system-ui,sans-serif;--ui:"Alexandria",system-ui,sans-serif;
 }
@@ -30,7 +30,7 @@ svg{display:block}
 .brand{display:flex;align-items:center;gap:calc(2*var(--u))}
 .brand .mark{width:calc(11*var(--u));height:calc(5.6*var(--u));background:var(--ink);-webkit-mask:url(assets/logo-mark.svg) center/contain no-repeat;mask:url(assets/logo-mark.svg) center/contain no-repeat}
 [data-phase="lobby"] .brand .mark{display:none}
-.floor{display:inline-flex;align-items:center;gap:calc(.9*var(--u));height:calc(4*var(--u));padding:0 calc(1.8*var(--u));border-radius:calc(1.1*var(--u));background:#2A0710;color:#F5A070;font-size:calc(1.8*var(--u));font-weight:500}
+.floor{display:inline-flex;align-items:center;gap:calc(.9*var(--u));height:calc(4*var(--u));padding:0 calc(1.8*var(--u));border-radius:calc(1.1*var(--u));background:#120E0C;color:#F5A070;font-size:calc(1.8*var(--u));font-weight:500}
 .floor svg{width:calc(1.1*var(--u));height:calc(1.1*var(--u));fill:currentColor}
 .tools{display:flex;align-items:center;gap:calc(.6*var(--u))}
 .tools .code{font-size:calc(1.8*var(--u));color:var(--muted);margin-inline-end:calc(1.2*var(--u))}
@@ -78,7 +78,7 @@ h3{font-size:calc(2.2*var(--u));font-weight:600}
 
 /* lobby */
 .lobby{display:grid;grid-template-columns:42% 1fr;height:100%}
-.lobby .cover{position:relative;overflow:hidden;background:#2A0710}
+.lobby .cover{position:relative;overflow:hidden;background:#120E0C}
 .lobby .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%;-webkit-mask-image:linear-gradient(#000 55%,transparent 98%);mask-image:linear-gradient(#000 55%,transparent 98%)}
 .cover-in{position:absolute;inset:auto 0 0 0;display:flex;flex-direction:column;align-items:center;gap:calc(1.4*var(--u));padding:calc(5*var(--u))}
 .cover-in .logo{width:calc(30*var(--u));aspect-ratio:270.5/140;background:var(--ink);-webkit-mask:url(assets/logo-full.svg) center/contain no-repeat;mask:url(assets/logo-full.svg) center/contain no-repeat}

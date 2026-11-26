@@ -192,7 +192,7 @@ function howto(){
       '<section class="tile win good"><div class="txt"><b>'+t('wg')+'</b><p>'+t('wgD')+'</p></div><img class="who" src="'+b('resident','m')+'" alt=""></section>'+
       '<section class="tile win sab"><div class="txt"><b>'+t('ws')+'</b><p>'+t('wsD')+'</p></div><img class="who" src="'+b('saboteur','f')+'" alt=""></section>'+
     '</div>'+
-    '<div class="foot"><button class="btn" data-act="enter">'+t('start')+'</button></div>');
+    '<div class="foot endfoot"><button class="btn" data-act="enter">'+t('enterB')+'</button></div>');
 }
 function cast(){
   const g=S.castG;
