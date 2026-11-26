@@ -443,3 +443,4 @@ button.row:active{background:var(--tint)}
 [dir="rtl"] .mtile{padding:6px 8px 6px 14px}
 .mtile .av{width:30px;height:30px;font-size:14px}
 .sabtag{flex:none;font-size:12px;font-weight:700;color:#3A0B15;background:var(--bad);padding:3px 10px;border-radius:10px}
+[dir="rtl"] .stat b{text-align:right}

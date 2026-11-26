@@ -181,7 +181,7 @@ function howto(){
     '<div class="bento">'+
       '<section class="tile story-t"><div class="pic"><img src="assets/scene/cover.webp" alt=""></div>'+
         '<div class="in"><h1>'+t('storyT')+'</h1><p>'+t('story1')+'</p><p class="em">'+t('story2')+'</p><p>'+t('story3')+'</p></div></section>'+
-      '<section class="tile stat"><b>'+t('statN')+'</b><span>'+t('statNd')+'</span></section>'+
+      '<section class="tile stat"><b dir="ltr">'+t('statN')+'</b><span>'+t('statNd')+'</span></section>'+
       '<section class="tile stat alt"><b>'+t('statM')+'</b><span>'+t('statMd')+'</span></section>'+
       '<h2 class="bhead">'+t('howSub')+'</h2>'+
       '<section class="tile night"><span class="moon"></span><i class="st s1"></i><i class="st s2"></i><i class="st s3"></i>'+
