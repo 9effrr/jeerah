@@ -70,7 +70,9 @@ ar:{
   menu:'القائمة', sound:'الصوت', soundD:'صوت الراوي والمؤثرات', lang:'English', langD:'تغيير لغة اللعبة',
   quit:'إنهاء الجولة', quitD:'العودة إلى الشاشة الرئيسية', quitAsk:'هل تريد إنهاء هذه الجولة؟', quitYes:'نعم، أنهِ الجولة', stay:'لنكمل اللعب',
   team_sab:'فريق المخرّبين', team_good:'فريق الجيران', team_solo:'يلعب وحده',
-  r_saboteur:'المخرّب', r_resident:'الجار', r_smart:'الفلتة', r_fixer:'الفني', r_legal:'المحامي', r_solid:'الكفو', r_complainer:'المتذمّر',
+  r_saboteur:'المخرّب', r_resident:'الجار', r_smart:'الفلتة', r_fixer:'الفني', r_legal:'المحامي', r_solid:'الكفو', r_complainer:'المتذمّر', r_guard:'الحارس',
+  d_guard:'كل ليلة تراقب شقة جار واحد بالكاميرات، فتعرف من زارها. لا يمكنك مراقبة الشقة نفسها ليلتين متتاليتين.',
+  guardQ:'أي شقة تراقب الليلة؟', guardNote:'راقبتها البارحة', camTitle:'كاميرات الحارس', camTitle_f:'كاميرات الحارسة', camSeen:'زار شقة {name} البارحة:', camNone:'لم يزر أحد شقة {name} البارحة', camWho:'من زار شقة {name} البارحة؟',
   d_saboteur:'كل ليلة تخرّب شقة مع شركائك، وفي النهار تتظاهر بأنك جار طيّب.',
   d_resident:'لا مهمة لك في الليل، لكن فراستك وصوتك في المجلس هما سلاحك.',
   d_smart:'كل ليلة تتحرّى عن جار واحد، فتعرف إن كان من المخرّبين.',
@@ -78,7 +80,8 @@ ar:{
   d_legal:'معك أمر إخلاء فوري ومذكرة حماية، ولكلٍّ منهما استخدام واحد في اللعبة.',
   d_solid:'إذا قرّر المجلس إخلاءك، تختار جارًا يغادر البناية معك.',
   d_complainer:'تفوز وحدك إذا صوّت المجلس على إخلائك، فاستفزّهم حتى يفعلوا!',
-  r_saboteur_f:'المخرّبة', r_resident_f:'الجارة', r_fixer_f:'الفنية', r_legal_f:'المحامية', r_complainer_f:'المتذمّرة',
+  r_saboteur_f:'المخرّبة', r_resident_f:'الجارة', r_fixer_f:'الفنية', r_legal_f:'المحامية', r_complainer_f:'المتذمّرة', r_guard_f:'الحارسة', guardQ_f:'أي شقة تراقبين الليلة؟',
+  d_guard_f:'كل ليلة تراقبين شقة جار واحد بالكاميرات، فتعرفين من زارها. لا يمكنك مراقبة الشقة نفسها ليلتين متتاليتين.',
   d_saboteur_f:'كل ليلة تخرّبين شقة مع شركائك، وفي النهار تتظاهرين بأنك جارة طيّبة.',
   d_smart_f:'كل ليلة تتحرّين عن جار واحد، فتعرفين إن كان من المخرّبين.',
   d_fixer_f:'كل ليلة تحمين شقة واحدة من التخريب، لكن لا يمكنك حماية الشقة نفسها ليلتين متتاليتين.',
@@ -186,7 +189,9 @@ en:{
   menu:'Menu', sound:'Sound', soundD:'Narrator and effects', lang:'العربية', langD:'Change the game language',
   quit:'End round', quitD:'Back to the home screen', quitAsk:'End this round?', quitYes:'Yes, end it', stay:'Keep playing',
   team_sab:'Saboteurs', team_good:'Neighbours', team_solo:'Plays alone',
-  r_saboteur:'Saboteur', r_resident:'Neighbour', r_smart:'The Sharp', r_fixer:'The Technician', r_legal:'The Lawyer', r_solid:'The Loyal', r_complainer:'The Complainer',
+  r_saboteur:'Saboteur', r_resident:'Neighbour', r_smart:'The Sharp', r_fixer:'The Technician', r_legal:'The Lawyer', r_solid:'The Loyal', r_complainer:'The Complainer', r_guard:'The Guard',
+  d_guard:'Each night, watch one neighbour’s flat on the cameras to see who visited it. Never the same flat two nights running.',
+  guardQ:'Which flat do you watch tonight?', guardNote:'Watched last night', camTitle:'Guard cameras', camSeen:'Visited {name}’s flat last night:', camNone:'Nobody visited {name}’s flat last night', camWho:'Who visited {name}’s flat last night?',
   d_saboteur:'Wreck one flat each night with your team, and act like a normal neighbour by day.',
   d_resident:'No night task. Your instincts and your council vote are your weapons.',
   d_smart:'Each night, investigate one neighbour to learn if they are a saboteur.',
@@ -218,10 +223,10 @@ en:{
 
 const ROLES={
   saboteur:{team:'sab'}, resident:{team:'good'}, smart:{team:'good'}, fixer:{team:'good'},
-  legal:{team:'good'}, solid:{team:'good'}, complainer:{team:'solo'}
+  legal:{team:'good'}, solid:{team:'good'}, guard:{team:'good'}, complainer:{team:'solo'}
 };
-const SPECIALS=['smart','fixer','legal','solid','complainer'];
-const ROLE_ORDER=['smart','resident','solid','legal','fixer','saboteur','complainer'];
+const SPECIALS=['smart','fixer','guard','legal','solid','complainer'];
+const ROLE_ORDER=['smart','resident','solid','legal','fixer','guard','saboteur','complainer'];
 const MIN=5, MAX=16;
 window.JDATA={T,ROLES,SPECIALS,ROLE_ORDER,MIN,MAX};
 })();

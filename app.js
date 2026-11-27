@@ -18,13 +18,14 @@ const S={
   names:store.get('names',[]),
   genders:store.get('genders',[]),
   newG:'m', castG:'m',
-  cfg:Object.assign({sabs:0,timer:180,roles:{smart:true,fixer:true,legal:true,solid:true,complainer:true}},store.get('cfg',{})),
+  cfg:Object.assign({sabs:0,timer:180,roles:{smart:true,fixer:true,guard:true,legal:true,solid:true,complainer:true}},store.get('cfg',{})),
   game:null, cur:null, timer:null
 };
+if(S.cfg.roles.guard===undefined)S.cfg.roles.guard=true;
 
 const app=document.getElementById('app'), screen=document.getElementById('screen');
 
-const PK=new Set(['hold','holdSub','seeFirst','team_solo','fixQ','smartQ','legalQ','legalKillD','legalSaveD','legalNoneD','legalSaveQ','decoyQ','p_joinTitle','p_started','p_nameTaken','p_youHost','p_closeEyes','p_outLead','p_youWon','p_youLost','p_peek','p_leaveAsk','h_new','h_orJoin','h_joinB','h_full']);
+const PK=new Set(['guardQ','hold','holdSub','seeFirst','team_solo','fixQ','smartQ','legalQ','legalKillD','legalSaveD','legalNoneD','legalSaveQ','decoyQ','p_joinTitle','p_started','p_nameTaken','p_youHost','p_closeEyes','p_outLead','p_youWon','p_youLost','p_peek','p_leaveAsk','h_new','h_orJoin','h_joinB','h_full']);
 function t(k,v){if(S.cg==='f'&&PK.has(k)&&T[S.lang][k+'_f']!=null)k=k+'_f';let s=(T[S.lang][k]!=null?T[S.lang][k]:T.ar[k])||k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
 function cnt(k,n){const f=t(k).split('|');if(f.length===1)return f[0].split('{n}').join(num(n));
   let s;if(f.length===2)s=n===1?f[0]:f[1];else s=n===1?f[0]:n===2?f[1]:(n%100>=3&&n%100<=10)?f[2]:f[3];return s.split('{n}').join(num(n))}
@@ -164,10 +165,10 @@ function home(){
 }
 function enterV(){
   const b=(r,g)=>'<img src="'+art(r,g,'bust')+'" alt="">';
-  const tile=(cls,act,href,k,art)=>'<button class="mtile '+cls+'" data-act="'+act+'"'+(href?' data-href="'+href+'"':'')+'>'+
+  const tile=(cls,act,href,k,art)=>'<button class="pmode '+cls+'" data-act="'+act+'"'+(href?' data-href="'+href+'"':'')+'>'+
     '<span class="mtx"><b>'+t(k)+'</b><span>'+t(k+'D')+'</span></span><span class="mart">'+art+'</span></button>';
   show('night',backBar()+'<h1 class="mt8">'+t('p_modeTitle')+'</h1>'+
-    '<div class="mtiles">'+
+    '<div class="pmodes">'+
       tile('one','to-setup','','m_one',b('smart','m'))+
       tile('each','go','join.html','m_each','<span class="duo">'+b('resident','m')+b('smart','f')+'</span>')+
       tile('tv','go','tv.html','m_tv','<span class="tvset"><img src="assets/scene/cover.webp" alt=""></span>')+
@@ -279,7 +280,7 @@ function newGame(){
   S.game={
     phase:'deal',round:1,
     players:S.names.map((name,i)=>({id:i,name,g:gOf(i),apt:apt(i),role:pool[i],alive:true})),
-    legal:{kill:false,save:false},lastProtect:null,immune:null,
+    legal:{kill:false,save:false},lastProtect:null,lastWatch:null,cam:null,immune:null,
     night:null,votes:null,sus:{},winner:null,soloName:null
   };
   dealTurn(0);
@@ -343,7 +344,7 @@ function reveal(p,i){
 /* ---------- night ---------- */
 function evening(){
   const g=S.game;g.phase='night';g.immune=null;
-  g.night={order:alive().map(p=>p.id),sabVotes:[],protect:null,kill:null,writ:null};
+  g.night={order:alive().map(p=>p.id),sabVotes:[],protect:null,kill:null,writ:null,watch:null,vis:[]};g.cam=null;
   show('night',
     '<div class="scene dark">'+topbar()+'<img src="assets/scene/window-peek.webp" alt=""></div>'+
     '<div class="after-scene stack g12"><h1>'+t('eveTitle')+'</h1><p class="lead">'+t('eveLead')+'</p></div>'+
@@ -359,8 +360,8 @@ function nightTurn(i){
 function me(p){
   return '<div class="me">'+face(p.role,p.g)+'<div class="txt"><span class="small">'+esc(p.name)+'</span><b>'+t('youAre',{role:rn(p.role,p.g)})+'</b></div></div>';
 }
-function mateTiles(list){
-  return '<span class="mates"><span class="mk">'+t('sabMates')+'</span><span class="mt">'+list.map(x=>'<span class="mtile"><span class="av '+x.g+'">'+esc(x.name.slice(0,1))+'</span>'+esc(x.name)+'</span>').join('')+'</span></span>';
+function mateTiles(list,bare){
+  return '<span class="mates">'+(bare?'':'<span class="mk">'+t('sabMates')+'</span>')+'<span class="mt">'+list.map(x=>'<span class="mtile"><span class="av '+x.g+'">'+esc(x.name.slice(0,1))+'</span>'+esc(x.name)+'</span>').join('')+'</span></span>';
 }
 function sabTag(){return '<span class="sabtag">'+t('sabTag')+'</span>'}
 function picker(o){
@@ -383,14 +384,18 @@ function nightAct(p,i){
   if(p.role==='saboteur'){
     const last=n.sabVotes.length?P(n.sabVotes[n.sabVotes.length-1]):null;
     picker({theme:'night',head:me(p),title:t('sabQ'),sub:last?t('sabTeam',{name:esc(last.name)}):'',
-      options:alive().filter(x=>x.id!==p.id).map(x=>({id:x.id,name:x.name,apt:x.apt,off:x.role==='saboteur',note:x.role==='saboteur'?sabTag():''})),onConfirm:id=>{n.sabVotes.push(id);next()}});
+      options:alive().filter(x=>x.id!==p.id).map(x=>({id:x.id,name:x.name,apt:x.apt,off:x.role==='saboteur',note:x.role==='saboteur'?sabTag():''})),onConfirm:id=>{n.sabVotes.push(id);n.vis.push({by:p.id,t:id,sab:true});next()}});
   }else if(p.role==='fixer'){
     picker({theme:'night',head:me(p),title:t('fixQ'),
       options:alive().map(x=>({id:x.id,name:x.name,apt:x.apt,off:x.id===g.lastProtect,note:x.id===g.lastProtect?t('fixNote'):''})),
-      onConfirm:id=>{n.protect=id;next()}});
+      onConfirm:id=>{n.protect=id;n.vis.push({by:p.id,t:id});next()}});
   }else if(p.role==='smart'){
     picker({theme:'night',head:me(p),title:t('smartQ'),options:opts(x=>x.id!==p.id),
-      onConfirm:id=>view(()=>smartResult(P(id),next))});
+      onConfirm:id=>{n.vis.push({by:p.id,t:id});view(()=>smartResult(P(id),next))}});
+  }else if(p.role==='guard'){
+    picker({theme:'night',head:me(p),title:t('guardQ'),
+      options:alive().filter(x=>x.id!==p.id).map(x=>({id:x.id,name:x.name,apt:x.apt,off:x.id===g.lastWatch,note:x.id===g.lastWatch?t('guardNote'):''})),
+      onConfirm:id=>{n.watch={by:p.id,t:id};next()}});
   }else if(p.role==='legal'){
     legalMenu(p,next);
   }else{
@@ -419,7 +424,7 @@ function legalPick(kind){
   picker({theme:'night',head:me(p),title:t(kind==='kill'?'legalKillQ':'legalSaveQ'),
     options:opts(x=>kind==='save'||x.id!==p.id),skip:t('back'),
     onSkip:()=>view(()=>legalMenu(p,next)),
-    onConfirm:id=>{if(kind==='kill'){g.night.kill=id;g.legal.kill=true}else{g.night.writ=id;g.legal.save=true}next()}});
+    onConfirm:id=>{if(kind==='kill'){g.night.kill=id;g.legal.kill=true}else{g.night.writ=id;g.legal.save=true}g.night.vis.push({by:p.id,t:id});next()}});
 }
 function sabTarget(votes){
   if(!votes.length)return null;
@@ -428,10 +433,22 @@ function sabTarget(votes){
   votes.forEach(v=>{if(c[v]>=bn){bn=c[v];best=v}});
   return best;
 }
+/* the guard sees who visited the watched flat; several saboteurs show as one visitor */
+function camWho(vis,w){
+  const v=vis.filter(x=>x.t===w.t&&x.by!==w.by),sab=shuffle(v.filter(x=>x.sab)).slice(0,1);
+  return shuffle(v.filter(x=>!x.sab).concat(sab)).map(x=>x.by);
+}
+function camCard(c){
+  const w=P(c.t),who=c.who.map(P);
+  return '<div class="cam"><span class="kicker">'+tg('camTitle',P(c.by).g)+'</span>'+
+    (who.length?'<b>'+t('camSeen',{name:esc(w.name)})+'</b>'+mateTiles(who,true):'<b>'+t('camNone',{name:esc(w.name)})+'</b>')+'</div>';
+}
 function resolveNight(){
   const g=S.game,n=g.night,rep=[];
   const target=sabTarget(n.sabVotes);
   g.lastProtect=n.protect;
+  g.lastWatch=n.watch?n.watch.t:null;
+  g.cam=n.watch?{by:n.watch.by,t:n.watch.t,who:camWho(n.vis,n.watch)}:null;
   if(n.kill!=null){P(n.kill).alive=false;rep.push({k:'mornLegal',p:P(n.kill)})}
   if(target!=null&&target!==n.kill){
     if(target===n.protect||target===n.writ)rep.push({k:'mornSaved'});
@@ -486,7 +503,8 @@ function voteTurn(i){
   const p=P(order[i]);
   doors(p,'hintVote',()=>view(()=>{
     S.cg=p.g;
-    picker({theme:'day',head:'<p class="kicker" style="margin-bottom:8px">'+esc(p.name)+' · '+t('hintVote')+'</p>',
+    const cam=g.cam&&g.cam.by===p.id?camCard(g.cam):'';
+    picker({theme:'day',head:'<p class="kicker" style="margin-bottom:8px">'+esc(p.name)+' · '+t('hintVote')+'</p>'+cam,
       title:t('voteQ'),options:opts(x=>x.id!==p.id&&x.id!==g.immune),skip:t('abstain'),
       onSkip:()=>voteTurn(i+1),onConfirm:id=>{g.votes[id]=(g.votes[id]||0)+1;voteTurn(i+1)}});
   }));
@@ -640,5 +658,5 @@ Back.init({
   }
 });
 if(/[?&]m=1/.test(location.search)){history.replaceState(null,'',location.pathname);view(enterV)}else view(home);
-window.__jeerah={S,A,P,alive,view,reveal,end,nightAct};
+window.__jeerah={S,A,P,alive,view,reveal,end,nightAct,resolveNight,voteTurn};
 })();

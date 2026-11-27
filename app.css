@@ -448,20 +448,25 @@ button.row:active{background:var(--tint)}
 .screen>.foot.endfoot{position:static;margin-bottom:0;background:none;padding-top:24px}
 
 /* ---------- play mode tiles ---------- */
-.mtiles{flex:1 0 auto;display:flex;flex-direction:column;gap:12px;margin-top:20px}
-.mtile{position:relative;flex:1 0 auto;min-height:150px;border-radius:26px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 40%;text-align:start;transition:transform .15s var(--ease)}
-.mtile:active{transform:scale(.98)}
+.pmodes{flex:1 0 auto;display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.pmode{position:relative;flex:1 0 auto;min-height:150px;border-radius:26px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 40%;text-align:start;transition:transform .15s var(--ease)}
+.pmode:active{transform:scale(.98)}
 .mtx{display:flex;flex-direction:column;gap:6px;padding:20px 20px 18px;align-self:start}
 .mtx b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.25}
 .mtx span{font-size:14px;line-height:1.6}
 .mart{position:relative;height:100%;pointer-events:none}
 .mart>img{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:94%;width:auto;max-width:none}
-.mtile.one{background:#F1E6CF;color:#2A1A10}.mtile.one .mtx span{color:#6A5442}
-.mtile.each{background:#3F5121;color:#F3EEDC}.mtile.each .mtx span{color:#D8E2C2}
-.mtile.tv{background:#153933;color:#F1E6CF}.mtile.tv .mtx span{color:#B9D2CA}
+.pmode.one{background:#F1E6CF;color:#2A1A10}.pmode.one .mtx span{color:#6A5442}
+.pmode.each{background:#3F5121;color:#F3EEDC}.pmode.each .mtx span{color:#D8E2C2}
+.pmode.tv{background:#153933;color:#F1E6CF}.pmode.tv .mtx span{color:#B9D2CA}
 .mart .duo{position:absolute;inset:0}
 .mart .duo img{position:absolute;bottom:0;height:min(90%,170px);width:auto;max-width:none}
 .mart .duo img:first-child{left:-30%}
 .mart .duo img:last-child{right:-14%;height:min(84%,160px)}
 .mart .tvset{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:84%;aspect-ratio:16/10;border-radius:10px;border:5px solid #0B1D1A;background:#0B1D1A;box-shadow:0 9px 0 -3px #0B1D1A}
 .mart .tvset img{width:100%;height:100%;object-fit:cover;object-position:50% 28%;border-radius:5px;display:block}
+/* guard camera report */
+.cam{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:16px 14px;border-radius:22px;background:var(--tint);margin:4px 0 6px}
+.cam .kicker{color:var(--accent)}
+.cam b{font-size:17px;line-height:1.5}
+.cam .mates{margin-top:4px}

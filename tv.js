@@ -7,7 +7,8 @@ const EMB=/[?&]embed=1/.test(location.search),QCODE=(location.search.match(/[?&]
 function tell(m){if(EMB&&parent!==window){try{parent.postMessage(Object.assign({jeerah:1},m),location.origin)}catch(e){}}}
 const store={get(k,d){try{const v=localStorage.getItem('jeerah:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('jeerah:'+k,JSON.stringify(v))}catch(e){}}};
 
-const UI={lang:store.get('lang','ar'),sound:store.get('sound',true),cfg:Object.assign({sabs:0,timer:180,roles:{smart:true,fixer:true,legal:true,solid:true,complainer:true}},store.get('cfg',{}))};
+const UI={lang:store.get('lang','ar'),sound:store.get('sound',true),cfg:Object.assign({sabs:0,timer:180,roles:{smart:true,fixer:true,guard:true,legal:true,solid:true,complainer:true}},store.get('cfg',{}))};
+if(UI.cfg.roles.guard===undefined)UI.cfg.roles.guard=true;
 function t(k,v){let s=(T[UI.lang][k]!=null?T[UI.lang][k]:T.ar[k]);if(s==null)s=k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
 function tg(k,g,v){return t(g==='f'&&T[UI.lang][k+'_f']!=null?k+'_f':k,v)}
 function rn(r,g){return tg('r_'+r,g)}
@@ -30,7 +31,7 @@ function music(on){try{if(on&&UI.sound){if(!bgm){bgm=new Audio('assets/audio/bgm
 /* ---------- game state ---------- */
 let G=null,net=null;
 const conns={}; // cid -> pid
-function fresh(code){return{code,phase:'lobby',round:0,players:[],hostPid:null,legal:{kill:false,save:false},lastProtect:null,immune:null,night:null,votes:{},sus:{},report:[],tally:[],verdict:null,second:null,winner:null,soloPid:null,left:0,paused:false}}
+function fresh(code){return{code,phase:'lobby',round:0,players:[],hostPid:null,legal:{kill:false,save:false},lastProtect:null,lastWatch:null,cam:null,immune:null,night:null,votes:{},sus:{},report:[],tally:[],verdict:null,second:null,winner:null,soloPid:null,left:0,paused:false}}
 function save(){try{const c=JSON.parse(JSON.stringify(G));c.players.forEach(p=>{p.cid=null;p.online=false});sessionStorage.setItem(SKEY,JSON.stringify({at:Date.now(),G:c}))}catch(e){}}
 const P=pid=>G.players.find(p=>p.pid===pid);
 const alive=()=>G.players.filter(p=>p.alive);
@@ -46,12 +47,12 @@ function deal(){
   const ps=G.players,c=compose(ps.length);
   const pool=shuffle(Array(c.sabs).fill('saboteur').concat(c.sp).concat(Array(c.res).fill('resident')));
   ps.forEach((p,i)=>{p.role=pool[i];p.alive=true;p.ready=false;p.apt=apt(i)});
-  Object.assign(G,{phase:'roles',round:1,legal:{kill:false,save:false},lastProtect:null,immune:null,night:null,votes:{},sus:{},report:[],tally:[],verdict:null,second:null,winner:null,soloPid:null});
+  Object.assign(G,{phase:'roles',round:1,legal:{kill:false,save:false},lastProtect:null,lastWatch:null,cam:null,immune:null,night:null,votes:{},sus:{},report:[],tally:[],verdict:null,second:null,winner:null,soloPid:null});
   snd('Ding',.4);
 }
 function startNight(){
   G.phase='night';G.immune=null;
-  G.night={sab:{},protect:null,kill:null,writ:null,smart:{},acted:{}};
+  G.night={sab:{},protect:null,kill:null,writ:null,smart:{},acted:{},watch:null,vis:[]};G.cam=null;
   vo(G.round===1?'voEvening':'voPostEvening');music(true);
 }
 function needsAct(p){return p.alive}
@@ -60,9 +61,16 @@ function sabTarget(){
   const v=Object.values(G.night.sab);if(!v.length)return null;
   const c={};let best=null,bn=0;v.forEach(x=>{c[x]=(c[x]||0)+1});v.forEach(x=>{if(c[x]>=bn){bn=c[x];best=x}});return best;
 }
+/* the guard sees who visited the watched flat; several saboteurs show as one visitor */
+function camWho(vis,w){
+  const v=vis.filter(x=>x.t===w.t&&x.by!==w.by),sab=shuffle(v.filter(x=>x.sab)).slice(0,1);
+  return shuffle(v.filter(x=>!x.sab).concat(sab)).map(x=>x.by);
+}
 function resolveNight(){
   const n=G.night,rep=[],target=sabTarget();
   G.lastProtect=n.protect;
+  G.lastWatch=n.watch?n.watch.t:null;
+  G.cam=n.watch?{by:n.watch.by,t:n.watch.t,who:camWho(n.vis,n.watch)}:null;
   if(n.kill!=null){P(n.kill).alive=false;rep.push({k:'mornLegal',pid:n.kill})}
   if(target!=null&&target!==n.kill){
     if(target===n.protect||target===n.writ)rep.push({k:'mornSaved'});
@@ -147,10 +155,12 @@ function viewFor(p){
       v.partner=Object.keys(n.sab).filter(k=>k!==p.pid).map(k=>({name:P(k).name,target:P(n.sab[k]).name}));}
     else if(p.role==='fixer'){v.kind='fix';v.options=alive().map(x=>({pid:x.pid,name:x.name,apt:x.apt,off:x.pid===G.lastProtect}))}
     else if(p.role==='smart'){v.kind='smart';v.options=opts(x=>x.pid!==p.pid)}
+    else if(p.role==='guard'){v.kind='guard';v.options=opts(x=>x.pid!==p.pid).map(o=>{if(o.pid===G.lastWatch){o.off=true;o.gw=true}return o})}
     else if(p.role==='legal'){v.kind='legal';v.used=G.legal;v.options=opts(()=>true);v.self=p.pid}
     else{v.kind='sus';v.options=opts(x=>x.pid!==p.pid)}
     return v;
   }
+  if(G.cam&&G.cam.by===p.pid&&p.alive&&(ph==='morning'||ph==='council'||ph==='vote'))v.cam={t:P(G.cam.t).name,who:G.cam.who.map(id=>({name:P(id).name,g:P(id).g}))};
   if(ph==='vote'){
     if(!p.alive){v.view='out';return v}
     if(p.pid in G.votes){v.view='wait';v.left=alive().filter(x=>!(x.pid in G.votes)).length;return v}
@@ -215,12 +225,13 @@ function onMsg(cid,m){
   if(m.t==='ready'&&G.phase==='roles'){p.ready=true;update();if(G.players.every(x=>x.ready)){setTimeout(()=>{if(G.phase==='roles'){startNight();update()}},1200)}return}
   if(m.t==='act'&&G.phase==='night'&&p.alive&&!G.night.acted[p.pid]){
     const n=G.night,tg_=m.target,tp=tg_!=null?P(tg_):null;
-    if(p.role==='saboteur'){if(!tp)return;n.sab[p.pid]=tg_}
-    else if(p.role==='fixer'){if(!tp||tg_===G.lastProtect)return;n.protect=tg_}
-    else if(p.role==='smart'){if(!tp)return;n.smart[p.pid]={name:tp.name,g:tp.g,sab:tp.role==='saboteur'}}
+    if(p.role==='saboteur'){if(!tp)return;n.sab[p.pid]=tg_;n.vis.push({by:p.pid,t:tg_,sab:true})}
+    else if(p.role==='fixer'){if(!tp||tg_===G.lastProtect)return;n.protect=tg_;n.vis.push({by:p.pid,t:tg_})}
+    else if(p.role==='smart'){if(!tp)return;n.smart[p.pid]={name:tp.name,g:tp.g,sab:tp.role==='saboteur'};n.vis.push({by:p.pid,t:tg_})}
+    else if(p.role==='guard'){if(!tp||tp===p||tg_===G.lastWatch)return;n.watch={by:p.pid,t:tg_}}
     else if(p.role==='legal'){
-      if(m.mode==='kill'&&tp&&!G.legal.kill){n.kill=tg_;G.legal.kill=true}
-      else if(m.mode==='save'&&tp&&!G.legal.save){n.writ=tg_;G.legal.save=true}
+      if(m.mode==='kill'&&tp&&!G.legal.kill){n.kill=tg_;G.legal.kill=true;n.vis.push({by:p.pid,t:tg_})}
+      else if(m.mode==='save'&&tp&&!G.legal.save){n.writ=tg_;G.legal.save=true;n.vis.push({by:p.pid,t:tg_})}
     }
     else if(tp){G.sus[tg_]=(G.sus[tg_]||0)+1}
     n.acted[p.pid]=true;snd('click_2',.25);update();

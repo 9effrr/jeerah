@@ -17,7 +17,7 @@ function fmt(s){const m=Math.floor(s/60),x=s%60;return m+':'+(x<10?'0':'')+x}
 function newCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 function qrSVG(text){const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+='M'+c+' '+r+'h1v1h-1z';return '<svg viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" fill="#F1ECE1"/><path d="'+d+'" fill="#1F2A3F"/></svg>'}
 
-const PK=new Set(['hold','holdSub','seeFirst','team_solo','fixQ','smartQ','legalQ','legalKillD','legalSaveD','legalNoneD','legalSaveQ','decoyQ','p_joinTitle','p_started','p_nameTaken','p_youHost','p_closeEyes','p_outLead','p_youWon','p_youLost','p_peek','p_leaveAsk','h_new','h_orJoin','h_joinB','h_full']);
+const PK=new Set(['guardQ','hold','holdSub','seeFirst','team_solo','fixQ','smartQ','legalQ','legalKillD','legalSaveD','legalNoneD','legalSaveQ','decoyQ','p_joinTitle','p_started','p_nameTaken','p_youHost','p_closeEyes','p_outLead','p_youWon','p_youLost','p_peek','p_leaveAsk','h_new','h_orJoin','h_joinB','h_full']);
 function t(k,v){if(S.g==='f'&&PK.has(k)&&T[S.lang][k+'_f']!=null)k=k+'_f';let s=(T[S.lang][k]!=null?T[S.lang][k]:T.ar[k]);if(s==null)s=k;if(v)for(const key in v)s=s.split('{'+key+'}').join(v[key]);return s}
 function tg(k,g,v){return t(g==='f'&&T[S.lang][k+'_f']!=null?k+'_f':k,v)}
 function rn(r,g){return tg('r_'+r,g)}
@@ -151,10 +151,10 @@ function pubV(st){
   const p=st.pub||{},ph=st.phase,me=st.me;let h='',theme='day';
   const note=me.alive?'':'<p class="small center-t mt16">'+tg('h_out',me.g)+'</p>';
   if(ph==='morning'){
-    h='<h1>'+t('mornTitle')+'</h1>'+(p.report||[]).map((r,i)=>'<div class="rep" style="animation-delay:'+(.2+i*.5)+'s">'+(r.role?'<img src="'+art(r.role,r.g,'face')+'" alt="">':'')+
+    h='<h1>'+t('mornTitle')+'</h1>'+camCard(st)+(p.report||[]).map((r,i)=>'<div class="rep" style="animation-delay:'+(.2+i*.5)+'s">'+(r.role?'<img src="'+art(r.role,r.g,'face')+'" alt="">':'')+
       '<div><p>'+(r.name?tg(r.k,r.g,{name:esc(r.name)}):t(r.k))+'</p>'+(r.role?'<p class="small">'+tg('was',r.g,{role:'<b style="color:'+teamCol(r.role)+'">'+rn(r.role,r.g)+'</b>'})+'</p>':'')+'</div></div>').join('');
   }else if(ph==='council'){
-    h='<h1>'+t('councilTitle')+'</h1><p class="lead">'+t('councilLead')+'</p>'+(p.timer?'<div class="clockp" id="clock">'+fmt(left(p))+'</div>':'')+cards(p.players||[]);
+    h='<h1>'+t('councilTitle')+'</h1><p class="lead">'+t('councilLead')+'</p>'+camCard(st)+(p.timer?'<div class="clockp" id="clock">'+fmt(left(p))+'</div>':'')+cards(p.players||[]);
   }else if(ph==='tally'){
     h='<h1>'+t('tallyTitle')+'</h1>'+((p.rows||[]).length?'<div class="tallyp">'+p.rows.map((r,i)=>'<div class="trow'+(r.top&&!p.tied?' top':'')+'" style="animation-delay:'+(.2+i*.25)+'s">'+av(r)+'<span class="nm">'+esc(r.name)+'</span><span class="dots">'+Array(r.n).fill('<i></i>').join('')+'</span><b>'+num(r.n)+'</b></div>').join('')+'</div>':'<p class="lead">'+t('noVotes')+'</p>');
   }else if(ph==='verdict'||ph==='solid'){
@@ -165,7 +165,7 @@ function pubV(st){
     theme=ph==='vote'?'day':'night';
     h='<h1>'+t('p_waitOthers')+'</h1>'+cards(p.players||[]);
   }
-  show(theme,top(st)+h+note+ctl(st),'pub'+ph+st.round+(p.by?1:0));
+  show(theme,top(st)+h+note+ctl(st),'pub'+ph+st.round+(p.by?1:0)+(st.cam?'c':''));
 }
 function left(p){return Math.max(0,p.paused?p.left:p.left-Math.floor((Date.now()-S.at)/1000))}
 setInterval(()=>{const st=S.state;if(!st||st.phase!=='council'||!st.pub||!st.pub.timer)return;const c=document.getElementById('clock');if(c){const l=left(st.pub);c.textContent=fmt(l);c.classList.toggle('low',l<=10)}},500);
@@ -189,7 +189,7 @@ function rolesV(st){
 function bigIcon(svg){return '<span class="bigic">'+svg+'</span>'}
 function me_(st){const me=st.me;return '<div class="me"><span class="face"><img src="'+art(me.role,me.g,'face')+'" alt=""></span><div class="txt"><span class="small">'+esc(me.name)+'</span><b>'+t('youAre',{role:rn(me.role,me.g)})+'</b></div></div>'}
 function rowsOf(options,selected){
-  return '<div class="list mt16">'+options.map(o=>'<button class="row'+(o.off?' off':'')+(selected===o.pid?' sel':'')+'" data-act="pick" data-id="'+o.pid+'"><span class="name">'+esc(o.name)+'</span>'+(o.sab?'<span class="sabtag">'+t('sabTag')+'</span>':o.off?'<span class="note">'+t('fixNote')+'</span>':'')+'<span class="tick">'+I.check+'</span></button>').join('')+'</div>';
+  return '<div class="list mt16">'+options.map(o=>'<button class="row'+(o.off?' off':'')+(selected===o.pid?' sel':'')+'" data-act="pick" data-id="'+o.pid+'"><span class="name">'+esc(o.name)+'</span>'+(o.sab?'<span class="sabtag">'+t('sabTag')+'</span>':o.off?'<span class="note">'+t(o.gw?'guardNote':'fixNote')+'</span>':'')+'<span class="tick">'+I.check+'</span></button>').join('')+'</div>';
 }
 function taskV(st){
   const k=st.kind,me=st.me;
@@ -203,13 +203,19 @@ function taskV(st){
   if(k==='sab'){title=t('sabQ');if(st.partner&&st.partner.length)sub=st.partner.map(p=>t('sabTeam',{name:esc(p.target)})).join(' · ')}
   else if(k==='fix')title=t('fixQ');
   else if(k==='smart')title=t('smartQ');
+  else if(k==='guard')title=t('guardQ');
   else if(k==='legal'){title=t(S.mode==='kill'?'legalKillQ':'legalSaveQ');if(S.mode==='kill')opts=opts.filter(o=>o.pid!==st.self);skip='<button class="btn ghost" data-act="mode-back">'+t('back')+'</button>'}
   else if(k==='sus'){title=t('decoyQ');sub=t('decoySub')}
   else if(k==='vote'){title=t('voteQ');sub=t('hintVote');skip='<button class="btn ghost" data-act="abstain">'+t('abstain')+'</button>'}
   else if(k==='solid'){title=t('solidQ');sub=t('solidKick')}
   if(S.sel&&!opts.some(o=>o.pid===S.sel&&!o.off))S.sel=null;
-  show(theme,top(st)+(k==='vote'?'':me_(st))+'<h2 class="pick-title">'+title+'</h2>'+(sub?'<p class="small">'+sub+'</p>':'')+
+  show(theme,top(st)+(k==='vote'?camCard(st):me_(st))+'<h2 class="pick-title">'+title+'</h2>'+(sub?'<p class="small">'+sub+'</p>':'')+
     rowsOf(opts,S.sel)+'<div class="foot"><button class="btn" data-act="send" '+(S.sel?'':'disabled')+'>'+ok+'</button>'+skip+'</div>',key);
+}
+/* the guard's private camera report */
+function camCard(st){
+  const c=st.cam;if(!c)return '';
+  return '<div class="cam"><span class="kicker">'+tg('camTitle',st.me.g)+'</span>'+(c.who.length?'<b>'+t('camSeen',{name:esc(c.t)})+'</b><span class="mates"><span class="mt">'+c.who.map(x=>'<span class="mtile">'+av(x)+esc(x.name)+'</span>').join('')+'</span></span>':'<b>'+t('camNone',{name:esc(c.t)})+'</b>')+'</div>';
 }
 function waitV(st){
   const night=st.phase==='night';
@@ -219,7 +225,7 @@ function waitV(st){
     '<h2>'+t('p_waitOthers')+'</h2><p class="lead">'+(night?t('p_closeEyes'):t('hintVote'))+'</p></div>'+(st.pub&&st.pub.players?cards(st.pub.players):'')+ctl(st),'wait'+st.phase+st.round+(st.smart?1:0));
 }
 function screenV(st){
-  show(st.phase==='night'?'night':'day',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1></div>'+ctl(st),'screen'+st.phase);
+  show(st.phase==='night'?'night':'day',top(st)+'<div class="stack center g16 grow" style="justify-content:center">'+bigIcon(I.tv)+'<h1>'+t('p_lookScreen')+'</h1>'+camCard(st)+'</div>'+ctl(st),'screen'+st.phase+(st.cam?'c':''));
 }
 function outV(st){
   const me=st.me;
@@ -258,7 +264,7 @@ function connect(){
 function send(m){if(S.net)S.net.send(m)}
 /* round roles, for whoever hosts from this phone (shared with the hidden host engine) */
 const cfgStore={get(){try{return JSON.parse(localStorage.getItem('jeerah:cfg'))||{}}catch(e){return{}}},set(v){try{localStorage.setItem('jeerah:cfg',JSON.stringify(v))}catch(e){}}};
-function getCfg(){const c=Object.assign({sabs:0,timer:180},cfgStore.get());c.roles=Object.assign({smart:true,fixer:true,legal:true,solid:true,complainer:true},c.roles||{});return c}
+function getCfg(){const c=Object.assign({sabs:0,timer:180},cfgStore.get());c.roles=Object.assign({smart:true,fixer:true,guard:true,legal:true,solid:true,complainer:true},c.roles||{});return c}
 function comp(c){
   const n=Math.max(S.state&&S.state.players?S.state.players.length:0,MIN);
   const auto=n<=6?1:n<=9?2:n<=13?3:4,maxS=Math.max(1,Math.ceil(n/2)-1),sabs=Math.min(maxS,Math.max(1,c.sabs||auto));
